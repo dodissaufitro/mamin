@@ -1,3 +1,6 @@
+import { AppContentCard, AppPageHeader } from '@/components/app-page';
+import { glassBtnPrimaryClass } from '@/lib/glass-styles';
+import { calcTotalHarga, formatRupiah } from '@/lib/spj-format';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -9,8 +12,10 @@ interface SpjItem {
     deadline_spj: string | null;
     pic: { id: number; nama: string; jabatan: string | null } | null;
     penyedia: { id: number; nama: string } | null;
+    item_hps?: { id: number; nama_item: string; harga_unit?: string | number } | null;
     kegiatan: string | null;
     jumlah_order: number | null;
+    total_harga: number | string | null;
     surat_undangan: boolean;
     memo: boolean;
     invoice: boolean;
@@ -70,7 +75,7 @@ function dokumenProgress(item: SpjItem) {
 function StatusBadge({ item }: { item: SpjItem }) {
     if (item.pembayaran_spj) {
         return (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-800/50 dark:text-emerald-300 shadow-sm">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
                 <CheckCircle2 className="h-3 w-3" /> Lunas
             </span>
         );
@@ -80,21 +85,21 @@ function StatusBadge({ item }: { item: SpjItem }) {
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
         if (days < 0) {
             return (
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-800/50 dark:text-red-300 shadow-sm">
+                <span className="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-800">
                         <XCircle className="h-3 w-3" /> Terlambat
                     </span>
             );
         }
         if (days <= 7) {
             return (
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700 dark:bg-orange-800/50 dark:text-orange-300 shadow-sm">
+                <span className="inline-flex items-center gap-1 rounded-full border border-orange-300 bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-800">
                         <AlertTriangle className="h-3 w-3" /> {days}h lagi
                     </span>
             );
         }
     }
     return (
-                <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-800/50 dark:text-sky-300 shadow-sm">
+                <span className="inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-800">
             <Clock className="h-3 w-3" /> Proses
         </span>
     );
@@ -111,23 +116,21 @@ export default function SpjIndex({ data }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="SPJ Makan Minum Rapat" />
             <div className="flex flex-col gap-4 p-4 md:p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h1 className="text-lg font-bold text-violet-800 dark:text-violet-200">SPJ Makan Minum Rapat</h1>
-                    <Link
-                        href="/spj/create"
-                        className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 transition-colors shadow-md shadow-violet-200 dark:shadow-violet-900/30"
-                    >
-                        <Plus className="h-4 w-4" /> Tambah SPJ
-                    </Link>
-                </div>
+                <AppPageHeader
+                    title="SPJ Makan Minum Rapat"
+                    description="Kelola data SPJ makan dan minum rapat"
+                    action={
+                        <Link href="/spj/create" className={glassBtnPrimaryClass}>
+                            <Plus className="h-4 w-4" /> Tambah SPJ
+                        </Link>
+                    }
+                />
 
-                {/* Table */}
-                <div className="rounded-xl border border-violet-200 bg-white shadow-sm dark:bg-sidebar dark:border-violet-800 overflow-hidden">
+                <AppContentCard className="p-0">
                     {data.data.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                            <p className="text-sm">Belum ada data SPJ.</p>
-                            <Link href="/spj/create" className="mt-3 text-sm font-semibold text-violet-600 hover:underline">
+                        <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+                            <p className="text-sm font-medium">Belum ada data SPJ.</p>
+                            <Link href="/spj/create" className="mt-3 text-sm font-semibold text-sky-700 hover:underline">
                                 + Tambah sekarang
                             </Link>
                         </div>
@@ -135,9 +138,11 @@ export default function SpjIndex({ data }: Props) {
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="bg-violet-50 dark:bg-violet-900/20 text-left text-xs font-semibold text-violet-700 dark:text-violet-300 uppercase tracking-wide">
+                                    <tr className="glass-table-head">
                                         <th className="px-4 py-3">#</th>
                                         <th className="px-4 py-3">Kegiatan</th>
+                                        <th className="px-4 py-3">Item HPS</th>
+                                        <th className="px-4 py-3 text-right">Total Harga</th>
                                         <th className="px-4 py-3">Tgl Kegiatan</th>
                                         <th className="px-4 py-3">Deadline SPJ</th>
                                         <th className="px-4 py-3">Penyedia</th>
@@ -147,45 +152,57 @@ export default function SpjIndex({ data }: Props) {
                                         <th className="px-4 py-3 text-center">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                <tbody className="divide-y divide-slate-200/70">
                                     {data.data.map((item, idx) => {
                                         const { done, total, pct } = dokumenProgress(item);
                                         const rowNum = (data.current_page - 1) * data.per_page + idx + 1;
                                         return (
-                                            <tr key={item.id} className="hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-colors">
-                                                <td className="px-4 py-3 text-gray-400">{rowNum}</td>
+                                            <tr key={item.id} className="glass-table-row">
+                                                <td className="px-4 py-3 text-slate-500">{rowNum}</td>
                                                 <td className="px-4 py-3 max-w-[200px]">
-                                                    <p className="truncate font-medium text-gray-800 dark:text-gray-200">{item.kegiatan ?? '-'}</p>
+                                                    <p className="truncate font-semibold text-slate-900">{item.kegiatan ?? '-'}</p>
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{formatDate(item.tanggal_kegiatan)}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{formatDate(item.deadline_spj)}</td>
                                                 <td className="px-4 py-3 max-w-[140px]">
-                                                    <p className="truncate text-gray-600 dark:text-gray-400">{item.penyedia?.nama ?? '-'}</p>
+                                                    <p className="truncate text-slate-700">{item.item_hps?.nama_item ?? '-'}</p>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-right font-medium text-slate-800">
+                                                    {item.total_harga != null
+                                                        ? formatRupiah(item.total_harga)
+                                                        : item.jumlah_order && item.item_hps?.harga_unit
+                                                          ? formatRupiah(
+                                                                calcTotalHarga(item.jumlah_order, item.item_hps.harga_unit),
+                                                            )
+                                                          : '-'}
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-slate-700">{formatDate(item.tanggal_kegiatan)}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-slate-700">{formatDate(item.deadline_spj)}</td>
+                                                <td className="px-4 py-3 max-w-[140px]">
+                                                    <p className="truncate text-slate-700">{item.penyedia?.nama ?? '-'}</p>
                                                 </td>
                                                 <td className="px-4 py-3 max-w-[120px]">
-                                                    <p className="truncate text-gray-600 dark:text-gray-400">{item.pic?.nama ?? '-'}</p>
+                                                    <p className="truncate text-slate-700">{item.pic?.nama ?? '-'}</p>
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex flex-col items-center gap-1 min-w-[80px]">
-                                                        <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                                                        <div className="h-2 w-full rounded-full bg-slate-200">
                                                             <div
                                                                 className={`h-1.5 rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-orange-400' : 'bg-rose-500'}`}
                                                                 style={{ width: `${pct}%` }}
                                                             />
                                                         </div>
-                                                        <span className="text-xs text-gray-400">{done}/{total}</span>
+                                                        <span className="text-xs font-medium text-slate-600">{done}/{total}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 text-center"><StatusBadge item={item} /></td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        <Link href={`/spj/${item.id}`} className="text-violet-400 hover:text-violet-700 transition-colors" title="Detail">
+                                                        <Link href={`/spj/${item.id}`} className="text-sky-600 hover:text-sky-800 transition-colors" title="Detail">
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
-                                                        <Link href={`/spj/${item.id}/edit`} className="text-sky-400 hover:text-sky-600 transition-colors" title="Edit">
+                                                        <Link href={`/spj/${item.id}/edit`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Edit">
                                                             <Pencil className="h-4 w-4" />
                                                         </Link>
-                                                        <button onClick={() => handleDelete(item.id)} className="text-rose-400 hover:text-rose-600 transition-colors" title="Hapus">
+                                                        <button onClick={() => handleDelete(item.id)} className="text-rose-600 hover:text-rose-800 transition-colors" title="Hapus">
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
                                                     </div>
@@ -200,8 +217,8 @@ export default function SpjIndex({ data }: Props) {
 
                     {/* Pagination */}
                     {data.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t border-violet-100 dark:border-violet-800 px-4 py-3">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center justify-between border-t border-slate-200/80 bg-slate-50/60 px-4 py-3">
+                            <p className="text-xs text-slate-600">
                                 Menampilkan {(data.current_page - 1) * data.per_page + 1}–{Math.min(data.current_page * data.per_page, data.total)} dari {data.total} data
                             </p>
                             <div className="flex gap-1">
@@ -211,10 +228,10 @@ export default function SpjIndex({ data }: Props) {
                                         href={link.url ?? '#'}
                                         className={`rounded px-3 py-1 text-xs ${
                                             link.active
-                                                                                                ? 'bg-violet-600 text-white shadow-sm'
+                                                ? 'rounded-lg bg-slate-900 text-white shadow-sm'
                                                 : link.url
-                                                ? 'text-violet-600 hover:bg-violet-100 dark:text-violet-400 dark:hover:bg-violet-900/30'
-                                                : 'pointer-events-none text-gray-300 dark:text-gray-600'
+                                                ? 'rounded-lg text-sky-700 hover:bg-sky-100'
+                                                : 'pointer-events-none text-slate-300'
                                         }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
@@ -222,7 +239,7 @@ export default function SpjIndex({ data }: Props) {
                             </div>
                         </div>
                     )}
-                </div>
+                </AppContentCard>
             </div>
         </AppLayout>
     );

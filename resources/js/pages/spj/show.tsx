@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import { calcTotalHarga, formatRupiah } from '@/lib/spj-format';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { CheckCircle2, ExternalLink, Pencil, Trash2, XCircle } from 'lucide-react';
@@ -11,7 +12,9 @@ interface SpjItem {
     pic: { id: number; nama: string; jabatan: string | null } | null;
     kegiatan: string | null;
     penyedia: { id: number; nama: string; alamat: string | null; telepon: string | null } | null;
+    item_hps?: { id: number; nama_item: string; harga_unit?: string | number } | null;
     jumlah_order: number | null;
+    total_harga: number | string | null;
     surat_undangan: boolean;
     memo: boolean;
     invoice: boolean;
@@ -108,7 +111,20 @@ export default function SpjShow({ spj }: Props) {
                             <InfoRow label="Tanggal Pemesanan" value={formatDate(spj.tanggal_pemesanan)} />
                             <InfoRow label="Tanggal Kegiatan" value={formatDate(spj.tanggal_kegiatan)} />
                             <InfoRow label="Deadline SPJ" value={formatDate(spj.deadline_spj)} />
+                            <InfoRow label="Item HPS" value={spj.item_hps?.nama_item ?? null} />
                             <InfoRow label="Jumlah Order" value={spj.jumlah_order?.toLocaleString('id-ID')} />
+                            <InfoRow
+                                label="Total Harga"
+                                value={
+                                    spj.total_harga != null
+                                        ? formatRupiah(spj.total_harga)
+                                        : spj.jumlah_order && spj.item_hps?.harga_unit
+                                          ? formatRupiah(
+                                                calcTotalHarga(spj.jumlah_order, spj.item_hps.harga_unit),
+                                            )
+                                          : null
+                                }
+                            />
                             <InfoRow label="Penyedia" value={spj.penyedia?.nama ?? null} />
                             <InfoRow label="PIC Penanggung Jawab" value={spj.pic ? `${spj.pic.nama}${spj.pic.jabatan ? ` (${spj.pic.jabatan})` : ''}` : null} />
                             <InfoRow label="Kasubbag / Kasi" value={spj.kasubbag_kasi} />

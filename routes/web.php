@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\ItemHpsController;
 use App\Http\Controllers\PenyediaController;
 use App\Http\Controllers\PicController;
 use App\Http\Controllers\SpjMakanMinumRapatController;
+use App\Models\ItemHps;
 use App\Models\SpjMakanMinumRapat;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,6 +16,7 @@ Route::get('/', function () {
 Route::resource('spj', SpjMakanMinumRapatController::class);
 Route::resource('pic', PicController::class)->except('show');
 Route::resource('penyedia', PenyediaController::class)->except('show');
+Route::resource('item-hps', ItemHpsController::class)->except('show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
@@ -31,6 +34,15 @@ Route::middleware(['auth'])->group(function () {
             ->where('deadline_spj', '<', now())
             ->count();
         $recent = SpjMakanMinumRapat::with('pic', 'penyedia')->latest()->take(8)->get();
+        $itemVolumes = ItemHps::query()
+            ->orderBy('nama_item')
+            ->get(['id', 'nama_item', 'volume'])
+            ->map(fn (ItemHps $item) => [
+                'id' => $item->id,
+                'nama_item' => $item->nama_item,
+                'volume' => (float) $item->volume,
+            ])
+            ->values();
 
         return Inertia::render('dashboard', [
             'stats' => [
@@ -42,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
                 'terlambat' => $terlambat,
             ],
             'recent' => $recent,
+            'itemVolumes' => $itemVolumes,
         ]);
     })->name('dashboard');
 });

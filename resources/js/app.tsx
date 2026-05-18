@@ -7,10 +7,18 @@ import { route as routeFn } from 'ziggy-js';
 import { initializeTheme } from './hooks/use-appearance';
 
 declare global {
-    const route: typeof routeFn;
+    interface Window {
+        route: typeof routeFn;
+    }
+    // Provided by @routes in app.blade.php; mirrored here for ESM usage.
+    var route: typeof routeFn;
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+if (typeof window !== 'undefined' && typeof window.route === 'undefined') {
+    window.route = routeFn;
+}
+
+const appName = import.meta.env.VITE_APP_NAME || 'Mamin SPJ';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

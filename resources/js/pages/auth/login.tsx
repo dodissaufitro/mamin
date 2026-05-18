@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -9,12 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
-
-interface LoginForm {
-    email: string;
-    password: string;
-    remember: boolean;
-}
+import { route } from '@/lib/ziggy';
+import { cn } from '@/lib/utils';
 
 interface LoginProps {
     status?: string;
@@ -22,10 +18,11 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
+    const [showPassword, setShowPassword] = useState(false);
+    const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
-        remember: false,
+        remember: false as boolean,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -36,13 +33,21 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
+        <AuthLayout title="Welcome to simamin" description="Please enter your details to sign in.">
             <Head title="Log in" />
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
+            {status && (
+                <div className="mb-4 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-2 text-center text-sm font-medium text-emerald-700">
+                    {status}
+                </div>
+            )}
+
+            <form className="flex flex-col gap-5" onSubmit={submit}>
+                <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email" className="font-semibold text-gray-800">
+                            E-Mail Address
+                        </Label>
                         <Input
                             id="email"
                             type="email"
@@ -52,53 +57,82 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            placeholder="Enter your email..."
+                            className="glass-input"
                         />
                         <InputError message={errors.email} />
                     </div>
 
                     <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
-                            {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                                    Forgot password?
-                                </TextLink>
-                            )}
+                        <Label htmlFor="password" className="font-semibold text-gray-800">
+                            Password
+                        </Label>
+                        <div className="relative">
+                            <Input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                required
+                                tabIndex={2}
+                                autoComplete="current-password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder="Password"
+                                className={cn('glass-input pr-10')}
+                            />
+                            <button
+                                type="button"
+                                tabIndex={-1}
+                                onClick={() => setShowPassword((v) => !v)}
+                                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
                         </div>
-                        <Input
-                            id="password"
-                            type="password"
-                            required
-                            tabIndex={2}
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
-                        />
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" tabIndex={3} />
-                        <Label htmlFor="remember">Remember me</Label>
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="remember"
+                                tabIndex={3}
+                                checked={data.remember}
+                                onCheckedChange={(checked) => setData('remember', checked === true)}
+                            />
+                            <Label htmlFor="remember" className="text-sm font-normal text-gray-600">
+                                Remember me
+                            </Label>
+                        </div>
+                        {canResetPassword && (
+                            <TextLink
+                                href={route('password.request')}
+                                className="text-sm text-gray-700 underline underline-offset-2"
+                                tabIndex={5}
+                            >
+                                Forgot password?
+                            </TextLink>
+                        )}
                     </div>
 
-                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
+                    <Button
+                        type="submit"
+                        className="mt-1 h-11 w-full rounded-xl bg-gray-900 text-white hover:bg-gray-800"
+                        tabIndex={4}
+                        disabled={processing}
+                    >
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
+                        Sign in
                     </Button>
                 </div>
 
-                <div className="text-muted-foreground text-center text-sm">
-                    Don't have an account?{' '}
-                    <TextLink href={route('register')} tabIndex={5}>
+                <p className="text-center text-sm text-gray-500">
+                    Don&apos;t have an account yet?{' '}
+                    <TextLink href={route('register')} tabIndex={6} className="font-semibold text-gray-900 underline-offset-2">
                         Sign up
                     </TextLink>
-                </div>
+                </p>
             </form>
-
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );
 }

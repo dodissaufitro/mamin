@@ -156,3 +156,87 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+    .glass-panel {
+        @apply rounded-3xl border border-white/80 bg-white/82 shadow-[0_8px_32px_rgba(15,23,42,0.1)] backdrop-blur-xl;
+    }
+
+    .glass-panel-subtle {
+        @apply rounded-2xl border border-white/75 bg-white/72 shadow-[0_4px_24px_rgba(15,23,42,0.08)] backdrop-blur-lg;
+    }
+
+    .glass-input {
+        @apply h-11 rounded-xl border border-slate-200/90 bg-white/95 px-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:border-sky-400 focus-visible:ring-2 focus-visible:ring-sky-500/25 focus-visible:ring-offset-0;
+    }
+
+    .glass-sidebar {
+        @apply rounded-2xl border border-white/85 bg-white/78 shadow-[0_8px_32px_rgba(15,23,42,0.1)] backdrop-blur-xl;
+    }
+
+    .glass-main {
+        @apply rounded-2xl border border-white/75 bg-white/72 shadow-[0_4px_24px_rgba(15,23,42,0.08)] backdrop-blur-lg;
+    }
+
+    .glass-table-head {
+        @apply border-b border-slate-200/80 bg-slate-50/90 text-left text-xs font-semibold tracking-wide text-slate-700 uppercase;
+    }
+
+    .glass-table-row {
+        @apply transition-colors hover:bg-sky-50/60;
+    }
+}
+
+.glass-theme {
+    color-scheme: light;
+    --background: transparent;
+    --foreground: hsl(222, 47%, 11%);
+    --card: rgba(255, 255, 255, 0.82);
+    --card-foreground: hsl(222, 47%, 11%);
+    --popover: rgba(255, 255, 255, 0.95);
+    --popover-foreground: hsl(222, 47%, 11%);
+    --primary: hsl(222, 47%, 11%);
+    --primary-foreground: hsl(0, 0%, 100%);
+    --muted: hsl(210, 40%, 96%);
+    --muted-foreground: hsl(215, 16%, 40%);
+    --accent: hsl(204, 94%, 94%);
+    --accent-foreground: hsl(204, 80%, 28%);
+    --border: rgba(255, 255, 255, 0.85);
+    --input: hsl(214, 32%, 91%);
+    --ring: hsl(204, 94%, 50%);
+    --sidebar-background: rgba(255, 255, 255, 0.78);
+    --sidebar-foreground: hsl(222, 47%, 18%);
+    --sidebar-primary: hsl(222, 47%, 11%);
+    --sidebar-primary-foreground: hsl(0, 0%, 100%);
+    --sidebar-accent: hsl(204, 94%, 94%);
+    --sidebar-accent-foreground: hsl(204, 80%, 28%);
+    --sidebar-border: rgba(255, 255, 255, 0.9);
+    --sidebar-ring: hsl(204, 94%, 50%);
+}
+
+.dark .glass-theme {
+    color-scheme: light;
+    --background: transparent;
+    --foreground: hsl(222, 47%, 11%);
+    --card: rgba(255, 255, 255, 0.82);
+    --card-foreground: hsl(222, 47%, 11%);
+    --popover: rgba(255, 255, 255, 0.95);
+    --popover-foreground: hsl(222, 47%, 11%);
+    --primary: hsl(222, 47%, 11%);
+    --primary-foreground: hsl(0, 0%, 100%);
+    --muted: hsl(210, 40%, 96%);
+    --muted-foreground: hsl(215, 16%, 40%);
+    --accent: hsl(204, 94%, 94%);
+    --accent-foreground: hsl(204, 80%, 28%);
+    --border: rgba(255, 255, 255, 0.85);
+    --input: hsl(214, 32%, 91%);
+    --ring: hsl(204, 94%, 50%);
+    --sidebar-background: rgba(255, 255, 255, 0.78);
+    --sidebar-foreground: hsl(222, 47%, 18%);
+    --sidebar-primary: hsl(222, 47%, 11%);
+    --sidebar-primary-foreground: hsl(0, 0%, 100%);
+    --sidebar-accent: hsl(204, 94%, 94%);
+    --sidebar-accent-foreground: hsl(204, 80%, 28%);
+    --sidebar-border: rgba(255, 255, 255, 0.9);
+    --sidebar-ring: hsl(204, 94%, 50%);
+}

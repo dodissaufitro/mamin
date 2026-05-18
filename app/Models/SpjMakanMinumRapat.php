@@ -16,7 +16,9 @@ class SpjMakanMinumRapat extends Model
         'pic_id',
         'penyedia_id',
         'kegiatan',
+        'item_hps_id',
         'jumlah_order',
+        'total_harga',
         'surat_undangan',
         'memo',
         'invoice',
@@ -46,6 +48,7 @@ class SpjMakanMinumRapat extends Model
         'dokumentasi' => 'boolean',
         'kelengkapan_dokumen' => 'boolean',
         'pembayaran_spj' => 'boolean',
+        'total_harga' => 'decimal:2',
     ];
 
     public function pic()
@@ -56,5 +59,10 @@ class SpjMakanMinumRapat extends Model
     public function penyedia()
     {
         return $this->belongsTo(Penyedia::class, 'penyedia_id');
+    }
+
+    public function itemHps()
+    {
+        return $this->belongsTo(ItemHps::class, 'item_hps_id');
     }
 }

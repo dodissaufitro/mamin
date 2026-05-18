@@ -1,4 +1,6 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import { CloudBackground } from '@/components/cloud-background';
+import { GlassPanel } from '@/components/glass-panel';
 import { Link } from '@inertiajs/react';
 
 interface AuthLayoutProps {
@@ -10,25 +12,22 @@ interface AuthLayoutProps {
 
 export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
     return (
-        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
-                        </Link>
+        <div className="glass-theme relative flex min-h-svh flex-col items-center justify-center p-4 md:p-8">
+            <CloudBackground />
 
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-muted-foreground text-center text-sm">{description}</p>
-                        </div>
-                    </div>
-                    {children}
+            <GlassPanel className="relative w-full max-w-md px-8 py-10 md:px-10">
+                <div className="mb-8 flex flex-col items-center text-center">
+                    <Link href={route('home')} className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-white/80 bg-amber-50/90 shadow-sm">
+                        <AppLogoIcon className="size-7 fill-current text-gray-900" />
+                    </Link>
+
+                    {title && <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>}
+                    {description && <p className="mt-2 text-sm text-gray-500">{description}</p>}
                 </div>
-            </div>
+
+                {children}
+            </GlassPanel>
         </div>
     );
 }
+

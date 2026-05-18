@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ClipboardList, LayoutGrid, Store, Users } from 'lucide-react';
+import { ClipboardList, LayoutGrid, Package, Store, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -28,13 +28,22 @@ const mainNavItems: NavItem[] = [
         url: '/penyedia',
         icon: Store,
     },
+    {
+        title: 'Item HPS',
+        url: '/item-hps',
+        icon: Package,
+    },
 ];
 
 const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar
+            collapsible="icon"
+            variant="floating"
+            className="[&_[data-sidebar=sidebar]]:glass-sidebar [&_[data-sidebar=sidebar]]:bg-transparent"
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

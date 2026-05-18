@@ -1,6 +1,15 @@
 import AppLayout from '@/layouts/app-layout';
+import { calcTotalHarga, formatRupiah } from '@/lib/spj-format';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
+
+interface ItemHpsOption {
+    id: number;
+    nama_item: string;
+    volume: string | number;
+    harga_unit: string | number;
+    available_volume: number;
+}
 
 interface SpjItem {
     id: number;
@@ -9,8 +18,10 @@ interface SpjItem {
     deadline_spj: string | null;
     pic_id: number | null;
     penyedia_id: number | null;
+    item_hps_id: number | null;
     kegiatan: string | null;
     jumlah_order: number | null;
+    item_hps?: { id: number; nama_item: string } | null;
     surat_undangan: boolean;
     memo: boolean;
     invoice: boolean;
@@ -30,6 +41,11 @@ interface Props {
     spj: SpjItem;
     pics: { id: number; nama: string; jabatan: string | null }[];
     penyedias: { id: number; nama: string }[];
+    items: ItemHpsOption[];
+}
+
+function formatQty(value: number) {
+    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -56,6 +72,7 @@ type FormData = {
     pic_id: string;
     kegiatan: string;
     penyedia_id: string;
+    item_hps_id: string;
     jumlah_order: string;
     surat_undangan: boolean;
     memo: boolean;
@@ -86,7 +103,7 @@ function InputField({ label, error, children }: { label: string; error?: string;
 const inputClass =
     'rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-400/30 dark:border-violet-700 dark:bg-gray-900 dark:text-gray-200';
 
-export default function SpjEdit({ spj, pics, penyedias }: Props) {
+export default function SpjEdit({ spj, pics, penyedias, items }: Props) {
     const { data, setData, post, processing, errors } = useForm<FormData>({
         _method: 'PUT',
         tanggal_pemesanan: spj.tanggal_pemesanan ?? '',
@@ -95,6 +112,7 @@ export default function SpjEdit({ spj, pics, penyedias }: Props) {
         pic_id: spj.pic_id?.toString() ?? '',
         kegiatan: spj.kegiatan ?? '',
         penyedia_id: spj.penyedia_id?.toString() ?? '',
+        item_hps_id: spj.item_hps_id?.toString() ?? '',
         jumlah_order: spj.jumlah_order?.toString() ?? '',
         surat_undangan: spj.surat_undangan,
         memo: spj.memo,
@@ -111,8 +129,22 @@ export default function SpjEdit({ spj, pics, penyedias }: Props) {
         link_spj: spj.link_spj ?? '',
     });
 
+    const selectedItem = items.find((i) => String(i.id) === data.item_hps_id);
+    const maxOrder = selectedItem?.available_volume ?? 0;
+    const totalHarga =
+        selectedItem && data.jumlah_order
+            ? calcTotalHarga(data.jumlah_order, selectedItem.harga_unit)
+            : 0;
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        const qty = parseFloat(data.jumlah_order);
+        if (!data.item_hps_id || !qty || qty <= 0) {
+            return;
+        }
+        if (selectedItem && qty > selectedItem.available_volume) {
+            return;
+        }
         post(`/spj/${spj.id}`);
     }
 
@@ -162,8 +194,53 @@ export default function SpjEdit({ spj, pics, penyedias }: Props) {
                                     ))}
                                 </select>
                             </InputField>
+                            <InputField label="Item HPS" error={errors.item_hps_id}>
+                                <select
+                                    className={inputClass}
+                                    value={data.item_hps_id}
+                                    onChange={(e) => {
+                                        setData((prev) => ({
+                                            ...prev,
+                                            item_hps_id: e.target.value,
+                                            jumlah_order: '',
+                                        }));
+                                    }}
+                                >
+                                    <option value="">-- Pilih Item --</option>
+                                    {items.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.nama_item} (tersedia: {formatQty(item.available_volume)})
+                                        </option>
+                                    ))}
+                                </select>
+                            </InputField>
                             <InputField label="Jumlah Order" error={errors.jumlah_order}>
-                                <input type="number" className={inputClass} value={data.jumlah_order} onChange={e => setData('jumlah_order', e.target.value)} placeholder="0" min="0" />
+                                <input
+                                    type="number"
+                                    className={inputClass}
+                                    value={data.jumlah_order}
+                                    onChange={(e) => setData('jumlah_order', e.target.value)}
+                                    placeholder="0"
+                                    min="0.01"
+                                    step="0.01"
+                                    max={maxOrder > 0 ? maxOrder : undefined}
+                                    disabled={!data.item_hps_id}
+                                />
+                                {selectedItem && (
+                                    <p className="text-xs text-slate-600">
+                                        Volume tersedia: <span className="font-semibold">{formatQty(selectedItem.available_volume)}</span>
+                                        {parseFloat(data.jumlah_order) > selectedItem.available_volume && (
+                                            <span className="ml-2 text-red-600">Melebihi volume tersedia</span>
+                                        )}
+                                    </p>
+                                )}
+                            </InputField>
+                            <InputField label="Total Harga">
+                                <p
+                                    className={`${inputClass} bg-violet-50 font-semibold text-violet-800 ${!selectedItem || !data.jumlah_order ? 'text-slate-400' : ''}`}
+                                >
+                                    {selectedItem && data.jumlah_order ? formatRupiah(totalHarga) : '-'}
+                                </p>
                             </InputField>
                         </div>
                     </div>
@@ -231,7 +308,13 @@ export default function SpjEdit({ spj, pics, penyedias }: Props) {
                         </a>
                         <button
                             type="submit"
-                            disabled={processing}
+                            disabled={
+                                processing ||
+                                !data.item_hps_id ||
+                                !data.jumlah_order ||
+                                parseFloat(data.jumlah_order) <= 0 ||
+                                (!!selectedItem && parseFloat(data.jumlah_order) > selectedItem.available_volume)
+                            }
                             className="rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60 transition-colors shadow-md shadow-violet-200 dark:shadow-violet-900/30"
                         >
                             {processing ? 'Menyimpan...' : 'Update'}
