@@ -65,6 +65,20 @@ const dokumenFields = [
     { key: 'dokumentasi', label: 'Dokumentasi' },
 ] as const;
 
+const trackingOptions = [
+    'Dokumen Tidak Lengkap',
+    'Dokumen Lengkap',
+    'SPPD & SOPD',
+    'Bendahara Pengeluaran (Biling Pajak PPH23)',
+    'Approval Pejabat Penatausahaan Keuangan',
+    'Approval PPATK',
+    'Approval KPA I',
+    'Bendahara Pengeluaran (CMS)',
+    'Approval KPA II',
+    'Upload Bukti Pembayaran',
+    'Selesai'
+];
+
 type FormData = {
     tanggal_pemesanan: string;
     tanggal_kegiatan: string;
@@ -84,6 +98,7 @@ type FormData = {
     dokumentasi: boolean;
     kelengkapan_dokumen: boolean;
     pembayaran_spj: boolean;
+    tracking_spj: string;
     kasubbag_kasi: string;
     staf: string;
     link_spj: string;
@@ -124,6 +139,7 @@ export default function SpjEdit({ spj, pics, penyedias, items }: Props) {
         dokumentasi: spj.dokumentasi,
         kelengkapan_dokumen: spj.kelengkapan_dokumen,
         pembayaran_spj: spj.pembayaran_spj,
+        tracking_spj: (spj as any).tracking_spj ?? '',
         kasubbag_kasi: spj.kasubbag_kasi ?? '',
         staf: spj.staf ?? '',
         link_spj: spj.link_spj ?? '',
@@ -135,6 +151,11 @@ export default function SpjEdit({ spj, pics, penyedias, items }: Props) {
         selectedItem && data.jumlah_order
             ? calcTotalHarga(data.jumlah_order, selectedItem.harga_unit)
             : 0;
+
+    const isGalon = selectedItem?.nama_item.toLowerCase().includes('galon');
+    const visibleDokumenFields = isGalon
+        ? dokumenFields.filter((df) => ['nib', 'invoice', 'kwitansi', 'memo'].includes(df.key))
+        : dokumenFields;
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -249,7 +270,7 @@ export default function SpjEdit({ spj, pics, penyedias, items }: Props) {
                                         <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
                         <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking Dokumen</h2>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            {dokumenFields.map(({ key, label }) => (
+                            {visibleDokumenFields.map(({ key, label }) => (
                                 <label key={key} className="flex cursor-pointer items-center gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
                                     <input
                                         type="checkbox"
@@ -264,16 +285,47 @@ export default function SpjEdit({ spj, pics, penyedias, items }: Props) {
                     </div>
 
                     {/* Tracking SPJ */}
-                                        <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
+                    <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
                         <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking SPJ</h2>
-                        <div className="grid grid-cols-2 gap-3">
-                            <label                             className="flex cursor-pointer items-center gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
-                                <input type="checkbox" className="h-4 w-4 rounded accent-violet-600" checked={data.kelengkapan_dokumen} onChange={e => setData('kelengkapan_dokumen', e.target.checked)} />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">Kelengkapan Dokumen</span>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {trackingOptions.map(opt => (
+                                <label key={opt} className="flex cursor-pointer items-start gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
+                                    <input
+                                        type="radio"
+                                        name="tracking_spj"
+                                        className="mt-0.5 h-4 w-4 accent-violet-600"
+                                        checked={data.tracking_spj === opt}
+                                        onChange={() => setData('tracking_spj', opt)}
+                                    />
+                                    <span className="text-sm text-gray-700 dark:text-gray-300 leading-tight">{opt}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Pembayaran */}
+                    <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
+                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Pembayaran</h2>
+                        <div className="flex gap-4">
+                            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 hover:bg-emerald-100">
+                                <input
+                                    type="radio"
+                                    name="pembayaran_spj"
+                                    className="h-4 w-4 accent-emerald-600"
+                                    checked={data.pembayaran_spj === true}
+                                    onChange={() => setData('pembayaran_spj', true)}
+                                />
+                                <span className="text-sm font-medium text-emerald-800">Pembayaran SPJ</span>
                             </label>
-                            <label                             className="flex cursor-pointer items-center gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
-                                <input type="checkbox" className="h-4 w-4 rounded accent-violet-600" checked={data.pembayaran_spj} onChange={e => setData('pembayaran_spj', e.target.checked)} />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">Pembayaran SPJ</span>
+                            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 hover:bg-rose-100">
+                                <input
+                                    type="radio"
+                                    name="pembayaran_spj"
+                                    className="h-4 w-4 accent-rose-600"
+                                    checked={data.pembayaran_spj === false}
+                                    onChange={() => setData('pembayaran_spj', false)}
+                                />
+                                <span className="text-sm font-medium text-rose-800">Belum Pembayaran SPJ</span>
                             </label>
                         </div>
                     </div>

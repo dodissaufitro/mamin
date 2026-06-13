@@ -7,10 +7,11 @@ import {
     Tooltip,
 } from 'recharts';
 
-export interface ItemVolumeDatum {
+export interface ItemAnggaranDatum {
     id: number;
     nama_item: string;
     volume: number;
+    harga_unit: number;
 }
 
 const SLICE_COLORS = [
@@ -23,12 +24,12 @@ const SLICE_COLORS = [
     '#a855f7', // Ungu
 ];
 
-function formatVolume(value: number) {
-    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
+function formatRupiah(value: number) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
 }
 
 interface TooltipPayload {
-    payload?: ItemVolumeDatum;
+    payload?: any;
     percent?: number;
 }
 
@@ -42,17 +43,17 @@ function ChartTooltip({ active, payload }: { active?: boolean; payload?: Tooltip
     return (
         <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-lg">
             <p className="text-xs font-semibold text-slate-900">{item.nama_item}</p>
-            <p className="mt-0.5 text-sm font-bold text-violet-700">Tersisa: {formatVolume(item.volume)}</p>
-            {pct != null && <p className="text-xs text-slate-600">{pct}% dari total volume</p>}
+            <p className="mt-0.5 text-sm font-bold text-violet-700">Sisa: {formatRupiah(item.value)}</p>
+            {pct != null && <p className="text-xs text-slate-600">{pct}% dari total sisa anggaran</p>}
         </div>
     );
 }
 
 interface Props {
-    data: ItemVolumeDatum[];
+    data: ItemAnggaranDatum[];
 }
 
-export function ItemVolumeChart({ data }: Props) {
+export function ItemAnggaranChart({ data }: Props) {
     if (data.length === 0) {
         return (
             <p className="py-12 text-center text-sm text-slate-500">
@@ -61,12 +62,14 @@ export function ItemVolumeChart({ data }: Props) {
         );
     }
 
-    const chartData = data.filter((item) => item.volume > 0);
+    const chartData = data
+        .map(item => ({ ...item, value: item.volume * item.harga_unit }))
+        .filter((item) => item.value > 0);
 
     if (chartData.length === 0) {
         return (
             <p className="py-12 text-center text-sm text-slate-500">
-                Volume semua item sudah habis.
+                Anggaran semua item sudah habis.
             </p>
         );
     }
@@ -77,7 +80,7 @@ export function ItemVolumeChart({ data }: Props) {
                 <PieChart>
                     <Pie
                         data={chartData}
-                        dataKey="volume"
+                        dataKey="value"
                         nameKey="nama_item"
                         cx="40%"
                         cy="50%"
@@ -96,7 +99,7 @@ export function ItemVolumeChart({ data }: Props) {
                         iconType="circle"
                         formatter={(value, entry: any) => (
                             <span className="text-xs font-medium text-slate-700 ml-1">
-                                {value} ({formatVolume(entry.payload.value)})
+                                {value} ({formatRupiah(entry.payload.value)})
                             </span>
                         )}
                         wrapperStyle={{ paddingLeft: 16 }}

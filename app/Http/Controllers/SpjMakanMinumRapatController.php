@@ -127,6 +127,7 @@ class SpjMakanMinumRapatController extends Controller
             'dokumentasi' => 'boolean',
             'kelengkapan_dokumen' => 'boolean',
             'pembayaran_spj' => 'boolean',
+            'tracking_spj' => 'nullable|string|max:255',
             'kasubbag_kasi' => 'nullable|string|max:255',
             'staf' => 'nullable|string|max:255',
             'link_spj' => 'nullable|string',

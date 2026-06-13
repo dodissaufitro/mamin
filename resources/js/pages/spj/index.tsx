@@ -26,6 +26,7 @@ interface SpjItem {
     dokumentasi: boolean;
     kelengkapan_dokumen: boolean;
     pembayaran_spj: boolean;
+    tracking_spj: string | null;
     kasubbag_kasi: string | null;
     staf: string | null;
 }
@@ -73,34 +74,20 @@ function dokumenProgress(item: SpjItem) {
 }
 
 function StatusBadge({ item }: { item: SpjItem }) {
-    if (item.pembayaran_spj) {
-        return (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
-                <CheckCircle2 className="h-3 w-3" /> Lunas
-            </span>
-        );
+    if (!item.tracking_spj) {
+        return <span className="text-xs text-slate-500">-</span>;
     }
-    if (item.deadline_spj) {
-        const diff = new Date(item.deadline_spj).getTime() - Date.now();
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-        if (days < 0) {
-            return (
-                <span className="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-800">
-                        <XCircle className="h-3 w-3" /> Terlambat
-                    </span>
-            );
-        }
-        if (days <= 7) {
-            return (
-                <span className="inline-flex items-center gap-1 rounded-full border border-orange-300 bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-800">
-                        <AlertTriangle className="h-3 w-3" /> {days}h lagi
-                    </span>
-            );
-        }
+    
+    let colorClass = "border-sky-300 bg-sky-100 text-sky-800";
+    if (item.tracking_spj === 'Selesai') {
+        colorClass = "border-emerald-300 bg-emerald-100 text-emerald-800";
+    } else if (item.tracking_spj === 'Dokumen Tidak Lengkap') {
+        colorClass = "border-red-300 bg-red-100 text-red-800";
     }
+    
     return (
-                <span className="inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-800">
-            <Clock className="h-3 w-3" /> Proses
+        <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${colorClass}`}>
+            {item.tracking_spj}
         </span>
     );
 }
@@ -196,9 +183,6 @@ export default function SpjIndex({ data }: Props) {
                                                 <td className="px-4 py-3 text-center"><StatusBadge item={item} /></td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        <Link href={`/spj/${item.id}`} className="text-sky-600 hover:text-sky-800 transition-colors" title="Detail">
-                                                            <Eye className="h-4 w-4" />
-                                                        </Link>
                                                         <Link href={`/spj/${item.id}/edit`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Edit">
                                                             <Pencil className="h-4 w-4" />
                                                         </Link>

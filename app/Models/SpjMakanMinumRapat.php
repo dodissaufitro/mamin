@@ -29,6 +29,7 @@ class SpjMakanMinumRapat extends Model
         'dokumentasi',
         'kelengkapan_dokumen',
         'pembayaran_spj',
+        'tracking_spj',
         'kasubbag_kasi',
         'staf',
         'link_spj',

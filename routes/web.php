@@ -36,11 +36,12 @@ Route::middleware(['auth'])->group(function () {
         $recent = SpjMakanMinumRapat::with('pic', 'penyedia')->latest()->take(8)->get();
         $itemVolumes = ItemHps::query()
             ->orderBy('nama_item')
-            ->get(['id', 'nama_item', 'volume'])
+            ->get(['id', 'nama_item', 'volume', 'harga_unit'])
             ->map(fn (ItemHps $item) => [
                 'id' => $item->id,
                 'nama_item' => $item->nama_item,
                 'volume' => (float) $item->volume,
+                'harga_unit' => (float) $item->harga_unit,
             ])
             ->values();
 

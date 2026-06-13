@@ -1,5 +1,6 @@
 import { AppContentCard, AppPageHeader } from '@/components/app-page';
 import { GlassPanel } from '@/components/glass-panel';
+import { ItemAnggaranChart } from '@/components/item-anggaran-chart';
 import { ItemVolumeChart, type ItemVolumeDatum } from '@/components/item-volume-chart';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -151,23 +152,37 @@ export default function Dashboard({ stats, recent, itemVolumes }: Props) {
                     })}
                 </div>
 
-                <GlassPanel className="rounded-2xl p-5">
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                            <h2 className="text-sm font-bold text-slate-900">Volume Item HPS Tersisa</h2>
-                            <p className="mt-0.5 text-xs text-slate-600">
-                                Sisa volume per item setelah pemesanan SPJ
-                            </p>
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <GlassPanel className="rounded-2xl p-5">
+                        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h2 className="text-sm font-bold text-slate-900">Volume Item HPS Tersisa</h2>
+                                <p className="mt-0.5 text-xs text-slate-600">
+                                    Sisa volume per item setelah pemesanan SPJ
+                                </p>
+                            </div>
+                            <Link
+                                href="/item-hps"
+                                className="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline"
+                            >
+                                Kelola Item HPS →
+                            </Link>
                         </div>
-                        <Link
-                            href="/item-hps"
-                            className="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline"
-                        >
-                            Kelola Item HPS →
-                        </Link>
-                    </div>
-                    <ItemVolumeChart data={itemVolumes} />
-                </GlassPanel>
+                        <ItemVolumeChart data={itemVolumes} />
+                    </GlassPanel>
+
+                    <GlassPanel className="rounded-2xl p-5">
+                        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h2 className="text-sm font-bold text-slate-900">Sisa Anggaran HPS</h2>
+                                <p className="mt-0.5 text-xs text-slate-600">
+                                    Sisa anggaran per item (Volume × Harga Unit)
+                                </p>
+                            </div>
+                        </div>
+                        <ItemAnggaranChart data={itemVolumes as any} />
+                    </GlassPanel>
+                </div>
 
                 {stats.total > 0 && (
                     <GlassPanel className="rounded-2xl p-5">
