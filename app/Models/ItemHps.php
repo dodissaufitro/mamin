@@ -4,8 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 class ItemHps extends Model
 {
+    use HasFactory;
     protected $table = 'item_hps';
 
     protected $fillable = [
