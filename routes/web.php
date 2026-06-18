@@ -17,6 +17,9 @@ Route::resource('spj', SpjMakanMinumRapatController::class);
 Route::resource('pic', PicController::class)->except('show');
 Route::resource('penyedia', PenyediaController::class)->except('show');
 Route::resource('item-hps', ItemHpsController::class)->except('show');
+Route::get('/test', function () {
+    return 'OK';
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
