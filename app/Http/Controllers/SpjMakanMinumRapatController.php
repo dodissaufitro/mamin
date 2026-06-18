@@ -45,6 +45,10 @@ class SpjMakanMinumRapatController extends Controller
 
             $spj = SpjMakanMinumRapat::create($validated);
             $this->stockService->deduct($order['item'], $order['qty']);
+
+            // Send notification to all admins
+            $admins = \App\Models\User::where('role', 'admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewSpjSubmitted($spj));
         });
 
         return redirect()->route('spj.index')
