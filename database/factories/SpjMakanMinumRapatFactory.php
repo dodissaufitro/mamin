@@ -23,7 +23,12 @@ class SpjMakanMinumRapatFactory extends Factory
             'deadline_spj' => fake()->dateTimeBetween('+1 month', '+2 months')->format('Y-m-d'),
             'pic_id' => \App\Models\Pic::inRandomOrder()->first()->id ?? 1,
             'penyedia_id' => \App\Models\Penyedia::inRandomOrder()->first()->id ?? 1,
-            'kegiatan' => fake()->sentence(4),
+            'kegiatan' => fake()->randomElement([
+                'Rapat Koordinasi Bulanan', 'Sosialisasi Program Baru', 
+                'Bimbingan Teknis Karyawan', 'Rapat Evaluasi Kinerja',
+                'Penyusunan Anggaran', 'Rapat Persiapan Acara',
+                'FGD (Focus Group Discussion)', 'Rapat Dengar Pendapat'
+            ]) . ' ' . fake()->year(),
             'item_hps_id' => \App\Models\ItemHps::inRandomOrder()->first()->id ?? 1,
             'jumlah_order' => fake()->numberBetween(10, 100),
             'total_harga' => fake()->randomFloat(2, 500000, 5000000),

@@ -18,7 +18,12 @@ class PenyediaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama' => fake()->company(),
+            'nama' => fake()->randomElement([
+                'Catering Bu Yanti', 'Warung Makan Sederhana', 'Katering Berkah', 
+                'RM Padang Salero', 'Snack & Bakery Makmur', 'Restoran Rasa Sayange',
+                'Dapur Kito Catering', 'Amanah Food Service', 'Catering Nusantara',
+                'Lestari Snack Box'
+            ]) . ' ' . fake()->companySuffix(),
             'alamat' => fake()->address(),
             'telepon' => fake()->phoneNumber(),
         ];

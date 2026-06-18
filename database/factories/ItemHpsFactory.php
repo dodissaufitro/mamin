@@ -18,9 +18,14 @@ class ItemHpsFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama_item' => fake()->words(3, true),
-            'volume' => fake()->randomFloat(2, 1, 100),
-            'harga_unit' => fake()->randomFloat(2, 10000, 1000000),
+            'nama_item' => fake()->randomElement([
+                'Nasi Kotak Ayam Bakar', 'Nasi Kotak Rendang', 'Snack Box Manis', 
+                'Snack Box Gurih', 'Prasmanan VIP', 'Prasmanan Reguler', 
+                'Kopi Tumbuk', 'Teh Manis Botol', 'Air Mineral Botol 600ml', 
+                'Kue Tampah', 'Nasi Tumpeng Mini', 'Buah Potong'
+            ]),
+            'volume' => fake()->randomElement([10, 20, 30, 50, 100]),
+            'harga_unit' => fake()->randomElement([15000, 25000, 35000, 50000, 75000, 100000]),
         ];
     }
 }
