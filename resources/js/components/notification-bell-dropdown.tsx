@@ -72,8 +72,8 @@ export function NotificationBellDropdown() {
                     )}
                 </div>
                 <div className="border-t px-4 py-2">
-                    <Link href="/inbox" className="text-sm font-medium text-violet-600 hover:underline">
-                        Lihat semua notifikasi
+                    <Link href="/spj" className="text-sm font-medium text-violet-600 hover:underline">
+                        Lihat semua di SPJ Makan Minum Rapat
                     </Link>
                 </div>
             </DropdownMenuContent>

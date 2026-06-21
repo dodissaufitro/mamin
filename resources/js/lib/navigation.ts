@@ -1,5 +1,5 @@
 import { type NavItem, type SharedData } from '@/types';
-import { ClipboardList, FileCheck2, Inbox, LayoutGrid, Package, Store, UserCog, Users } from 'lucide-react';
+import { ClipboardList, FileCheck2, LayoutGrid, Package, Store, UserCog, Users } from 'lucide-react';
 
 export function getNavItems(auth: SharedData['auth']): NavItem[] {
     const permissions = auth.permissions ?? {};
@@ -49,15 +49,6 @@ export function getNavItems(auth: SharedData['auth']): NavItem[] {
             title: 'Kelola User',
             url: '/users',
             icon: UserCog,
-        });
-    }
-
-    if (permissions.viewInbox) {
-        const unreadCount = (auth.user?.unread_notifications_count as number) || 0;
-        items.push({
-            title: `Inbox / Notifikasi${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
-            url: '/inbox',
-            icon: Inbox,
         });
     }
 

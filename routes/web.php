@@ -32,7 +32,7 @@ Route::middleware(['auth'])->group(function () {
                 ->count();
             $recent = SpjMakanMinumRapat::with(['pic', 'penyedia', 'itemHps.jenisDokumens', 'spjDokumens'])
                 ->latest()
-                ->take(8)
+                ->take(5)
                 ->get();
 
             $itemVolumes = ItemHps::with('spjList')

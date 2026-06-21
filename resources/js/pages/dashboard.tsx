@@ -190,14 +190,6 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
 
                 {/* 3. Sisa Anggaran HPS Chart */}
                 <GlassPanel className="rounded-2xl p-5">
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                            <h2 className="text-sm font-bold text-slate-900">Sisa Anggaran HPS</h2>
-                            <p className="mt-0.5 text-xs text-slate-600">
-                                Sisa Anggaran Tahun Berjalan
-                            </p>
-                        </div>
-                    </div>
                     <ItemAnggaranChart data={itemVolumes} />
                 </GlassPanel>
 

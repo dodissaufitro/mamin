@@ -10,7 +10,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, Search, Inbox } from 'lucide-react';
+import { LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -58,17 +58,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
-                                            {auth.permissions?.viewInbox && (
-                                                <Link href="/inbox" className="flex items-center space-x-2 font-medium">
-                                                    <Icon iconNode={Menu} className="h-5 w-5" />
-                                                    <span>Inbox / Notifikasi</span>
-                                                    {(auth.user.unread_notifications_count as number) > 0 && (
-                                                        <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
-                                                            {auth.user.unread_notifications_count as number}
-                                                        </span>
-                                                    )}
-                                                </Link>
-                                            )}
                                         </div>
 
                                         <div />
@@ -104,29 +93,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         )}
                                     </NavigationMenuItem>
                                 ))}
-                                {auth.permissions?.viewInbox && (
-                                    <NavigationMenuItem className="relative flex h-full items-center">
-                                        <Link
-                                            href="/inbox"
-                                            className={cn(
-                                                navigationMenuTriggerStyle(),
-                                                page.url.startsWith('/inbox') && activeItemStyles,
-                                                'h-9 cursor-pointer px-3',
-                                            )}
-                                        >
-                                            <Icon iconNode={Inbox} className="mr-2 h-4 w-4" />
-                                            Inbox / Notifikasi
-                                            {(auth.user.unread_notifications_count as number) > 0 && (
-                                                <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
-                                                    {auth.user.unread_notifications_count as number}
-                                                </span>
-                                            )}
-                                        </Link>
-                                        {page.url.startsWith('/inbox') && (
-                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
-                                        )}
-                                    </NavigationMenuItem>
-                                )}
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>
