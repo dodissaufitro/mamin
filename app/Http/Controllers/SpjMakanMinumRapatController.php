@@ -6,6 +6,7 @@ use App\Models\ItemHps;
 use App\Models\Pic;
 use App\Models\Penyedia;
 use App\Models\SpjMakanMinumRapat;
+use App\Services\SpjDokumenService;
 use App\Services\SpjItemStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,11 +16,21 @@ class SpjMakanMinumRapatController extends Controller
 {
     public function __construct(
         private readonly SpjItemStockService $stockService,
+        private readonly SpjDokumenService $dokumenService,
     ) {}
 
     public function index()
     {
-        $data = SpjMakanMinumRapat::with('pic', 'penyedia', 'itemHps')->latest()->paginate(15);
+        $data = SpjMakanMinumRapat::query()
+            ->with(['pic', 'penyedia', 'itemHps.jenisDokumens', 'spjDokumens'])
+            ->latest()
+            ->paginate(15);
+
+        $data->getCollection()->transform(function (SpjMakanMinumRapat $spj) {
+            $spj->setAttribute('dokumen_progress', $this->dokumenService->progressFor($spj));
+
+            return $spj;
+        });
 
         return Inertia::render('spj/index', ['data' => $data]);
     }
@@ -37,7 +48,7 @@ class SpjMakanMinumRapatController extends Controller
     {
         $validated = $this->withTotalHarga($this->validateSpj($request));
 
-        DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($validated, $request) {
             $order = $this->stockService->validateItemOrder(
                 $validated['item_hps_id'] ?? null,
                 $validated['jumlah_order'] ?? null,
@@ -46,9 +57,19 @@ class SpjMakanMinumRapatController extends Controller
             $spj = SpjMakanMinumRapat::create($validated);
             $this->stockService->deduct($order['item'], $order['qty']);
 
-            // Send notification to all admins
-            $admins = \App\Models\User::where('role', 'admin')->get();
-            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewSpjSubmitted($spj));
+            $spj->load('pic', 'penyedia', 'itemHps');
+
+            $recipients = \App\Models\User::query()
+                ->whereIn('role', [
+                    \App\Enums\UserRole::SuperAdmin,
+                    \App\Enums\UserRole::Bendahara,
+                ])
+                ->get();
+
+            \Illuminate\Support\Facades\Notification::send(
+                $recipients,
+                new \App\Notifications\NewSpjSubmitted($spj, $request->user()),
+            );
         });
 
         return redirect()->route('spj.index')
@@ -57,18 +78,34 @@ class SpjMakanMinumRapatController extends Controller
 
     public function show(SpjMakanMinumRapat $spj)
     {
+        $spj->load([
+            'pic',
+            'penyedia',
+            'itemHps.jenisDokumens',
+            'spjDokumens.jenisDokumen',
+        ]);
+
         return Inertia::render('spj/show', [
-            'spj' => $spj->load('pic', 'penyedia', 'itemHps'),
+            'spj' => $spj,
+            'dokumenProgress' => $this->dokumenService->progressFor($spj),
         ]);
     }
 
     public function edit(SpjMakanMinumRapat $spj)
     {
+        $spj->load([
+            'pic',
+            'penyedia',
+            'itemHps.jenisDokumens',
+            'spjDokumens.jenisDokumen',
+        ]);
+
         return Inertia::render('spj/edit', [
-            'spj' => $spj->load('pic', 'penyedia', 'itemHps'),
+            'spj' => $spj,
             'pics' => Pic::orderBy('nama')->get(['id', 'nama', 'jabatan']),
             'penyedias' => Penyedia::orderBy('nama')->get(['id', 'nama']),
             'items' => $this->stockService->itemsForForm($spj),
+            'dokumenProgress' => $this->dokumenService->progressFor($spj),
         ]);
     }
 
@@ -76,7 +113,7 @@ class SpjMakanMinumRapatController extends Controller
     {
         $validated = $this->withTotalHarga($this->validateSpj($request));
 
-        DB::transaction(function () use ($spj, $validated) {
+        DB::transaction(function () use ($spj, $validated, $request) {
             $order = $this->stockService->validateItemOrder(
                 $validated['item_hps_id'] ?? null,
                 $validated['jumlah_order'] ?? null,
@@ -90,6 +127,7 @@ class SpjMakanMinumRapatController extends Controller
             );
 
             $spj->update($validated);
+            $this->dokumenService->syncUploads($spj, $request);
         });
 
         return redirect()->route('spj.index')
@@ -99,6 +137,7 @@ class SpjMakanMinumRapatController extends Controller
     public function destroy(SpjMakanMinumRapat $spj)
     {
         DB::transaction(function () use ($spj) {
+            $this->dokumenService->deleteAllForSpj($spj);
             $this->stockService->restore($spj->item_hps_id, $spj->jumlah_order);
             $spj->delete();
         });
@@ -121,20 +160,15 @@ class SpjMakanMinumRapatController extends Controller
             'kegiatan' => 'nullable|string|max:255',
             'item_hps_id' => 'required|exists:item_hps,id',
             'jumlah_order' => 'required|numeric|min:0.01',
-            'surat_undangan' => 'boolean',
-            'memo' => 'boolean',
-            'invoice' => 'boolean',
-            'kwitansi' => 'boolean',
-            'nib' => 'boolean',
-            'absen' => 'boolean',
-            'notulen' => 'boolean',
-            'dokumentasi' => 'boolean',
-            'kelengkapan_dokumen' => 'boolean',
             'pembayaran_spj' => 'boolean',
             'tracking_spj' => 'nullable|string|max:255',
             'kasubbag_kasi' => 'nullable|string|max:255',
             'staf' => 'nullable|string|max:255',
             'link_spj' => 'nullable|string',
+            'dokumen_uploads' => 'nullable|array',
+            'dokumen_uploads.*' => 'nullable|file|max:10240',
+            'dokumen_hapus' => 'nullable|array',
+            'dokumen_hapus.*' => 'integer|exists:jenis_dokumens,id',
         ]);
     }
 

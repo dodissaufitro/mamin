@@ -2,30 +2,21 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
-
 use App\Models\SpjMakanMinumRapat;
+use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
 
 class NewSpjSubmitted extends Notification
 {
     use Queueable;
 
-    public $spj;
+    public function __construct(
+        public SpjMakanMinumRapat $spj,
+        public ?User $submittedBy = null,
+    ) {}
 
     /**
-     * Create a new notification instance.
-     */
-    public function __construct(SpjMakanMinumRapat $spj)
-    {
-        $this->spj = $spj;
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
@@ -34,27 +25,24 @@ class NewSpjSubmitted extends Notification
     }
 
     /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
+        $this->spj->loadMissing('pic', 'penyedia', 'itemHps');
+
+        $kegiatan = $this->spj->kegiatan ?: 'Tanpa nama kegiatan';
+        $submitter = $this->submittedBy?->name ?? 'PIC';
+
         return [
+            'type' => 'new_spj',
             'spj_id' => $this->spj->id,
-            'kegiatan' => $this->spj->kegiatan,
-            'message' => 'New SPJ submitted: ' . $this->spj->kegiatan,
+            'kegiatan' => $kegiatan,
+            'item_hps' => $this->spj->itemHps?->nama_item,
+            'pic' => $this->spj->pic?->nama,
+            'penyedia' => $this->spj->penyedia?->nama,
+            'submitted_by' => $submitter,
+            'message' => "SPJ baru dari {$submitter}: {$kegiatan}",
         ];
     }
 }

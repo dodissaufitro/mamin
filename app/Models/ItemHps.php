@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ItemHps extends Model
 {
     use HasFactory;
+
     protected $table = 'item_hps';
 
     protected $fillable = [
@@ -25,8 +27,13 @@ class ItemHps extends Model
         ];
     }
 
-    public function spjList()
+    public function spjList(): HasMany
     {
         return $this->hasMany(SpjMakanMinumRapat::class, 'item_hps_id');
+    }
+
+    public function jenisDokumens(): BelongsToMany
+    {
+        return $this->belongsToMany(JenisDokumen::class, 'item_hps_jenis_dokumen');
     }
 }

@@ -1,7 +1,7 @@
 import { AppContentCard, AppPageHeader } from '@/components/app-page';
 import { GlassPanel } from '@/components/glass-panel';
-import { ItemAnggaranChart } from '@/components/item-anggaran-chart';
-import { type ItemVolumeDatum } from '@/components/item-volume-chart';
+import { ItemAnggaranChart, type ItemAnggaranDatum } from '@/components/item-anggaran-chart';
+import { dokumenProgressFromCounts, type DokumenProgress, type JenisDokumenItem, type SpjDokumenItem } from '@/lib/dokumen';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -33,14 +33,12 @@ interface SpjItem {
     penyedia: { id: number; nama: string } | null;
     kegiatan: string | null;
     jumlah_order: number | null;
-    surat_undangan: boolean;
-    memo: boolean;
-    invoice: boolean;
-    kwitansi: boolean;
-    nib: boolean;
-    absen: boolean;
-    notulen: boolean;
-    dokumentasi: boolean;
+    item_hps?: {
+        id: number;
+        nama_item: string;
+        jenis_dokumens?: JenisDokumenItem[];
+    } | null;
+    spj_dokumens?: SpjDokumenItem[];
     kelengkapan_dokumen: boolean;
     pembayaran_spj: boolean;
     kasubbag_kasi: string | null;
@@ -80,32 +78,23 @@ interface ItemHpsStats {
 interface Props {
     stats: Stats;
     recent: SpjItem[];
-    itemVolumes: ItemVolumeDatum[];
+    itemVolumes: ItemAnggaranDatum[];
     items: ItemHpsStats[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
-
-const dokumenKeys: { key: keyof SpjItem; label: string }[] = [
-    { key: 'surat_undangan', label: 'Surat Undangan' },
-    { key: 'memo', label: 'Memo' },
-    { key: 'invoice', label: 'Invoice' },
-    { key: 'kwitansi', label: 'Kwitansi' },
-    { key: 'nib', label: 'NIB' },
-    { key: 'absen', label: 'Absen' },
-    { key: 'notulen', label: 'Notulen' },
-    { key: 'dokumentasi', label: 'Dokumentasi' },
-];
 
 function formatDate(dateStr: string | null) {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-function dokumenProgress(item: SpjItem) {
-    const total = dokumenKeys.length;
-    const done = dokumenKeys.filter((d) => item[d.key] === true).length;
-    return { done, total, pct: Math.round((done / total) * 100) };
+function dokumenProgress(item: SpjItem): DokumenProgress {
+    const requiredIds = item.item_hps?.jenis_dokumens?.map((d) => d.id) ?? [];
+    const uploadedIds = item.spj_dokumens?.map((d) => d.jenis_dokumen_id) ?? [];
+    const done = requiredIds.filter((id) => uploadedIds.includes(id)).length;
+
+    return dokumenProgressFromCounts(done, requiredIds.length);
 }
 
 function StatusBadge({ item }: { item: SpjItem }) {
@@ -209,7 +198,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                             </p>
                         </div>
                     </div>
-                    <ItemAnggaranChart data={itemVolumes as any} />
+                    <ItemAnggaranChart data={itemVolumes} />
                 </GlassPanel>
 
                 {/* 4. Realisasi Volume Section (Item-centric Dashboard) */}

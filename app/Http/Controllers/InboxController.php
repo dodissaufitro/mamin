@@ -4,42 +4,47 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\SpjMakanMinumRapat;
 
 class InboxController extends Controller
 {
     public function index()
     {
-        // Require admin role
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Get SPJs that are not "Selesai"
-        $tasks = SpjMakanMinumRapat::with(['pic', 'penyedia', 'itemHps'])
-            ->where(function ($query) {
-                $query->whereNull('tracking_spj')
-                      ->orWhere('tracking_spj', '!=', 'Selesai');
-            })
+        $notifications = auth()->user()
+            ->notifications()
             ->latest()
             ->paginate(15);
 
-        return Inertia::render('inbox/index', ['tasks' => $tasks]);
+        return Inertia::render('inbox/index', [
+            'notifications' => $notifications,
+            'unreadCount' => auth()->user()->unreadNotifications()->count(),
+        ]);
     }
 
-    public function updateStatus(Request $request, SpjMakanMinumRapat $spj)
+    public function open(string $id)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        $spjId = $notification->data['spj_id'] ?? null;
+
+        if (! $spjId) {
+            return redirect()->route('inbox.index');
         }
 
-        $validated = $request->validate([
-            'tracking_spj' => 'required|string|max:255',
-        ]);
+        $user = auth()->user();
 
-        $spj->update($validated);
+        if ($user->isSuperAdmin() || $user->isBendahara()) {
+            return redirect()->route('spj.edit', $spjId);
+        }
+
+        return redirect()->route('spj.show', $spjId);
+    }
+
+    public function markAllRead()
+    {
+        auth()->user()->unreadNotifications->markAsRead();
 
         return redirect()->route('inbox.index')
-            ->with('success', 'Status SPJ berhasil diperbarui');
+            ->with('success', 'Semua notifikasi ditandai sudah dibaca.');
     }
 }

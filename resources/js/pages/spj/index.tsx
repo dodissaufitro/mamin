@@ -1,10 +1,13 @@
 import { AppContentCard, AppPageHeader } from '@/components/app-page';
+import { DokumenProgressBar } from '@/components/dokumen-tracking-fields';
 import { glassBtnPrimaryClass } from '@/lib/glass-styles';
 import { calcTotalHarga, formatRupiah } from '@/lib/spj-format';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AlertTriangle, CheckCircle2, Clock, Eye, Pencil, Plus, Trash2, XCircle } from 'lucide-react';
+
+import { type DokumenProgress } from '@/lib/dokumen';
 
 interface SpjItem {
     id: number;
@@ -12,19 +15,15 @@ interface SpjItem {
     deadline_spj: string | null;
     pic: { id: number; nama: string; jabatan: string | null } | null;
     penyedia: { id: number; nama: string } | null;
-    item_hps?: { id: number; nama_item: string; harga_unit?: string | number } | null;
+    item_hps?: {
+        id: number;
+        nama_item: string;
+        harga_unit?: string | number;
+    } | null;
+    dokumen_progress?: DokumenProgress;
     kegiatan: string | null;
     jumlah_order: number | null;
     total_harga: number | string | null;
-    surat_undangan: boolean;
-    memo: boolean;
-    invoice: boolean;
-    kwitansi: boolean;
-    nib: boolean;
-    absen: boolean;
-    notulen: boolean;
-    dokumentasi: boolean;
-    kelengkapan_dokumen: boolean;
     pembayaran_spj: boolean;
     tracking_spj: string | null;
     kasubbag_kasi: string | null;
@@ -51,26 +50,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'SPJ Makan Minum Rapat', href: '/spj' },
 ];
 
-const dokumenKeys: { key: keyof SpjItem; label: string }[] = [
-    { key: 'surat_undangan', label: 'Undangan' },
-    { key: 'memo', label: 'Memo' },
-    { key: 'invoice', label: 'Invoice' },
-    { key: 'kwitansi', label: 'Kwitansi' },
-    { key: 'nib', label: 'NIB' },
-    { key: 'absen', label: 'Absen' },
-    { key: 'notulen', label: 'Notulen' },
-    { key: 'dokumentasi', label: 'Dokumentasi' },
-];
-
 function formatDate(dateStr: string | null) {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function dokumenProgress(item: SpjItem) {
-    const done = dokumenKeys.filter((d) => item[d.key] === true).length;
-    const total = dokumenKeys.length;
-    return { done, total, pct: Math.round((done / total) * 100) };
 }
 
 function StatusBadge({ item }: { item: SpjItem }) {
@@ -93,6 +75,9 @@ function StatusBadge({ item }: { item: SpjItem }) {
 }
 
 export default function SpjIndex({ data }: Props) {
+    const { auth } = usePage<SharedData>().props;
+    const permissions = auth.permissions ?? {};
+
     function handleDelete(id: number) {
         if (confirm('Hapus data SPJ ini?')) {
             router.delete(`/spj/${id}`);
@@ -107,9 +92,11 @@ export default function SpjIndex({ data }: Props) {
                     title="SPJ Makan Minum Rapat"
                     description="Kelola data SPJ makan dan minum rapat"
                     action={
-                        <Link href="/spj/create" className={glassBtnPrimaryClass}>
-                            <Plus className="h-4 w-4" /> Tambah SPJ
-                        </Link>
+                        permissions.createSpj ? (
+                            <Link href="/spj/create" className={glassBtnPrimaryClass}>
+                                <Plus className="h-4 w-4" /> Tambah SPJ
+                            </Link>
+                        ) : undefined
                     }
                 />
 
@@ -117,9 +104,11 @@ export default function SpjIndex({ data }: Props) {
                     {data.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-slate-500">
                             <p className="text-sm font-medium">Belum ada data SPJ.</p>
-                            <Link href="/spj/create" className="mt-3 text-sm font-semibold text-sky-700 hover:underline">
-                                + Tambah sekarang
-                            </Link>
+                            {permissions.createSpj && (
+                                <Link href="/spj/create" className="mt-3 text-sm font-semibold text-sky-700 hover:underline">
+                                    + Tambah sekarang
+                                </Link>
+                            )}
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
@@ -141,7 +130,6 @@ export default function SpjIndex({ data }: Props) {
                                 </thead>
                                 <tbody className="divide-y divide-slate-200/70">
                                     {data.data.map((item, idx) => {
-                                        const { done, total, pct } = dokumenProgress(item);
                                         const rowNum = (data.current_page - 1) * data.per_page + idx + 1;
                                         return (
                                             <tr key={item.id} className="glass-table-row">
@@ -170,25 +158,24 @@ export default function SpjIndex({ data }: Props) {
                                                     <p className="truncate text-slate-700">{item.pic?.nama ?? '-'}</p>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <div className="flex flex-col items-center gap-1 min-w-[80px]">
-                                                        <div className="h-2 w-full rounded-full bg-slate-200">
-                                                            <div
-                                                                className={`h-1.5 rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-orange-400' : 'bg-rose-500'}`}
-                                                                style={{ width: `${pct}%` }}
-                                                            />
-                                                        </div>
-                                                        <span className="text-xs font-medium text-slate-600">{done}/{total}</span>
-                                                    </div>
+                                                    <DokumenProgressBar progress={item.dokumen_progress} />
                                                 </td>
                                                 <td className="px-4 py-3 text-center"><StatusBadge item={item} /></td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        <Link href={`/spj/${item.id}/edit`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Edit">
-                                                            <Pencil className="h-4 w-4" />
+                                                        <Link href={`/spj/${item.id}`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Detail">
+                                                            <Eye className="h-4 w-4" />
                                                         </Link>
-                                                        <button onClick={() => handleDelete(item.id)} className="text-rose-600 hover:text-rose-800 transition-colors" title="Hapus">
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </button>
+                                                        {permissions.updateSpj && (
+                                                            <Link href={`/spj/${item.id}/edit`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Edit">
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
+                                                        )}
+                                                        {permissions.deleteSpj && (
+                                                            <button onClick={() => handleDelete(item.id)} className="text-rose-600 hover:text-rose-800 transition-colors" title="Hapus">
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>

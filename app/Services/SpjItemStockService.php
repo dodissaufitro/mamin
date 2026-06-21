@@ -88,6 +88,7 @@ class SpjItemStockService
     public function itemsForForm(?SpjMakanMinumRapat $spj = null): array
     {
         return ItemHps::query()
+            ->with('jenisDokumens:id,nama,kode')
             ->orderBy('nama_item')
             ->get()
             ->map(function (ItemHps $item) use ($spj) {
@@ -103,6 +104,11 @@ class SpjItemStockService
                     'volume' => $item->volume,
                     'harga_unit' => $item->harga_unit,
                     'available_volume' => $available,
+                    'jenis_dokumens' => $item->jenisDokumens->map(fn ($d) => [
+                        'id' => $d->id,
+                        'nama' => $d->nama,
+                        'kode' => $d->kode,
+                    ])->values()->all(),
                 ];
             })
             ->all();

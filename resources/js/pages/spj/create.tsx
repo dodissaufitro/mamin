@@ -1,5 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { calcTotalHarga, formatRupiah } from '@/lib/spj-format';
+import { type JenisDokumenItem } from '@/lib/dokumen';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -11,6 +12,7 @@ interface ItemHpsOption {
     volume: string | number;
     harga_unit: string | number;
     available_volume: number;
+    jenis_dokumens: JenisDokumenItem[];
 }
 
 interface Props {
@@ -28,17 +30,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'SPJ Makan Minum Rapat', href: '/spj' },
     { title: 'Tambah SPJ', href: '/spj/create' },
 ];
-
-const dokumenFields = [
-    { key: 'surat_undangan', label: 'Surat Undangan' },
-    { key: 'memo', label: 'Memo' },
-    { key: 'invoice', label: 'Invoice' },
-    { key: 'kwitansi', label: 'Kwitansi' },
-    { key: 'nib', label: 'NIB' },
-    { key: 'absen', label: 'Absen' },
-    { key: 'notulen', label: 'Notulen' },
-    { key: 'dokumentasi', label: 'Dokumentasi' },
-] as const;
 
 const trackingOptions = [
     'Dokumen Tidak Lengkap',
@@ -63,15 +54,6 @@ type FormData = {
     penyedia_id: string;
     item_hps_id: string;
     jumlah_order: string;
-    surat_undangan: boolean;
-    memo: boolean;
-    invoice: boolean;
-    kwitansi: boolean;
-    nib: boolean;
-    absen: boolean;
-    notulen: boolean;
-    dokumentasi: boolean;
-    kelengkapan_dokumen: boolean;
     pembayaran_spj: boolean;
     tracking_spj: string;
     kasubbag_kasi: string;
@@ -102,15 +84,6 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
         penyedia_id: '',
         item_hps_id: '',
         jumlah_order: '',
-        surat_undangan: false,
-        memo: false,
-        invoice: false,
-        kwitansi: false,
-        nib: false,
-        absen: false,
-        notulen: false,
-        dokumentasi: false,
-        kelengkapan_dokumen: false,
         pembayaran_spj: false,
         tracking_spj: '',
         kasubbag_kasi: '',
@@ -124,11 +97,6 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
         selectedItem && data.jumlah_order
             ? calcTotalHarga(data.jumlah_order, selectedItem.harga_unit)
             : 0;
-
-    const isGalon = selectedItem?.nama_item.toLowerCase().includes('galon');
-    const visibleDokumenFields = isGalon
-        ? dokumenFields.filter((df) => ['nib', 'invoice', 'kwitansi', 'memo'].includes(df.key))
-        : dokumenFields;
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -242,23 +210,32 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                         </div>
                     </div>
 
-                    {/* Tracking Dokumen */}
-                                        <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
-                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking Dokumen</h2>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            {visibleDokumenFields.map(({ key, label }) => (
-                                <label key={key} className="flex cursor-pointer items-center gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
-                                    <input
-                                        type="checkbox"
-                                                                                className="h-4 w-4 rounded accent-violet-600"
-                                        checked={data[key]}
-                                        onChange={e => setData(key, e.target.checked)}
-                                    />
-                                    <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
-                                </label>
-                            ))}
+                    {selectedItem && (
+                        <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
+                            <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                                Dokumen yang Berlaku
+                            </h2>
+                            {selectedItem.jenis_dokumens.length === 0 ? (
+                                <p className="text-sm text-slate-500">
+                                    Belum ada dokumen yang diaktifkan pada Item HPS ini.
+                                </p>
+                            ) : (
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedItem.jenis_dokumens.map((dokumen) => (
+                                        <span
+                                            key={dokumen.id}
+                                            className="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-800"
+                                        >
+                                            {dokumen.nama}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <p className="mt-3 text-xs text-slate-500">
+                                Upload file dokumen dilakukan setelah SPJ dibuat, melalui halaman Edit SPJ.
+                            </p>
                         </div>
-                    </div>
+                    )}
 
                     {/* Tracking SPJ */}
                     <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">

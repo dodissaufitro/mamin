@@ -2,29 +2,42 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
+        User::updateOrCreate(
+            ['email' => 'superadmin@example.com'],
             [
-                'name' => 'Test User',
-                'password' => bcrypt('password')
+                'name' => 'Super Admin',
+                'password' => bcrypt('password'),
+                'role' => UserRole::SuperAdmin,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'pic@example.com'],
+            [
+                'name' => 'PIC User',
+                'password' => bcrypt('password'),
+                'role' => UserRole::Pic,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'bendahara@example.com'],
+            [
+                'name' => 'Bendahara User',
+                'password' => bcrypt('password'),
+                'role' => UserRole::Bendahara,
             ]
         );
 
         $this->call([
-            UserSeeder::class,
             PicSeeder::class,
             PenyediaSeeder::class,
             ItemHpsSeeder::class,

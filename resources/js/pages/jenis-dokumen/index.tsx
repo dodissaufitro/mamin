@@ -1,69 +1,52 @@
 import { AppContentCard, AppPageHeader } from '@/components/app-page';
-import { DokumenCountBadge } from '@/components/dokumen-tracking-fields';
 import { glassBtnPrimaryClass } from '@/lib/glass-styles';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 
-interface ItemHpsRow {
+interface JenisDokumenRow {
     id: number;
-    nama_item: string;
-    volume: string | number;
-    harga_unit: string | number;
-    jenis_dokumens_count: number;
+    nama: string;
+    kode: string;
+    item_hps_count: number;
 }
 
 interface Props {
-    items: ItemHpsRow[];
+    jenisDokumens: JenisDokumenRow[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Item HPS', href: '/item-hps' },
+    { title: 'Dokumen Berlaku', href: '/jenis-dokumen' },
 ];
 
-function formatRupiah(value: string | number) {
-    const amount = typeof value === 'string' ? parseFloat(value) : value;
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount);
-}
-
-function formatVolume(value: string | number) {
-    const amount = typeof value === 'string' ? parseFloat(value) : value;
-    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(amount);
-}
-
-export default function ItemHpsIndex({ items }: Props) {
+export default function JenisDokumenIndex({ jenisDokumens }: Props) {
     function handleDelete(id: number) {
-        if (confirm('Hapus item HPS ini?')) {
-            router.delete(`/item-hps/${id}`);
+        if (confirm('Hapus jenis dokumen ini?')) {
+            router.delete(`/jenis-dokumen/${id}`);
         }
     }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Item HPS" />
+            <Head title="Dokumen Berlaku" />
             <div className="flex flex-col gap-4 p-4 md:p-6">
                 <AppPageHeader
-                    title="Item HPS"
-                    description="Kelola daftar item dan harga satuan HPS"
+                    title="Dokumen Berlaku"
+                    description="Kelola jenis dokumen yang dapat dipilih pada Item HPS"
                     action={
-                        <Link href="/item-hps/create" className={glassBtnPrimaryClass}>
-                            <Plus className="h-4 w-4" /> Tambah Item
+                        <Link href="/jenis-dokumen/create" className={glassBtnPrimaryClass}>
+                            <Plus className="h-4 w-4" /> Tambah Dokumen
                         </Link>
                     }
                 />
 
                 <AppContentCard className="p-0">
-                    {items.length === 0 ? (
+                    {jenisDokumens.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-                            <p className="text-sm font-medium">Belum ada data item HPS.</p>
-                            <Link href="/item-hps/create" className="mt-3 text-sm font-semibold text-sky-700 hover:underline">
+                            <p className="text-sm font-medium">Belum ada jenis dokumen.</p>
+                            <Link href="/jenis-dokumen/create" className="mt-3 text-sm font-semibold text-sky-700 hover:underline">
                                 + Tambah sekarang
                             </Link>
                         </div>
@@ -72,27 +55,23 @@ export default function ItemHpsIndex({ items }: Props) {
                             <thead>
                                 <tr className="glass-table-head">
                                     <th className="px-4 py-3">#</th>
-                                    <th className="px-4 py-3">Nama Item</th>
-                                    <th className="px-4 py-3 text-right">Volume</th>
-                                    <th className="px-4 py-3 text-right">Harga Unit</th>
-                                    <th className="px-4 py-3 text-center">Dokumen Berlaku</th>
+                                    <th className="px-4 py-3">Nama Dokumen</th>
+                                    <th className="px-4 py-3">Kode</th>
+                                    <th className="px-4 py-3 text-center">Digunakan Item HPS</th>
                                     <th className="px-4 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/70">
-                                {items.map((item, idx) => (
+                                {jenisDokumens.map((item, idx) => (
                                     <tr key={item.id} className="glass-table-row">
                                         <td className="px-4 py-3 text-slate-500">{idx + 1}</td>
-                                        <td className="px-4 py-3 font-semibold text-slate-900">{item.nama_item}</td>
-                                        <td className="px-4 py-3 text-right text-slate-700">{formatVolume(item.volume)}</td>
-                                        <td className="px-4 py-3 text-right font-medium text-slate-800">{formatRupiah(item.harga_unit)}</td>
-                                        <td className="px-4 py-3 text-center">
-                                            <DokumenCountBadge count={item.jenis_dokumens_count} />
-                                        </td>
+                                        <td className="px-4 py-3 font-semibold text-slate-900">{item.nama}</td>
+                                        <td className="px-4 py-3 font-mono text-xs text-slate-600">{item.kode}</td>
+                                        <td className="px-4 py-3 text-center text-slate-700">{item.item_hps_count}</td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center justify-center gap-2">
                                                 <Link
-                                                    href={`/item-hps/${item.id}/edit`}
+                                                    href={`/jenis-dokumen/${item.id}/edit`}
                                                     className="text-slate-600 transition-colors hover:text-slate-900"
                                                     title="Edit"
                                                 >

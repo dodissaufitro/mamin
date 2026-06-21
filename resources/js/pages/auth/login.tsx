@@ -125,13 +125,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         Sign in
                     </Button>
                 </div>
-
-                <p className="text-center text-sm text-gray-500">
-                    Don&apos;t have an account yet?{' '}
-                    <TextLink href={route('register')} tabIndex={6} className="font-semibold text-gray-900 underline-offset-2">
-                        Sign up
-                    </TextLink>
-                </p>
             </form>
         </AuthLayout>
     );

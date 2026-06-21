@@ -44,9 +44,13 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user() ? array_merge($request->user()->toArray(), [
+                    'role' => $request->user()->role instanceof \App\Enums\UserRole
+                        ? $request->user()->role->value
+                        : $request->user()->role,
                     'notifications' => $request->user()->notifications()->take(5)->get(),
                     'unread_notifications_count' => $request->user()->unreadNotifications()->count(),
                 ]) : null,
+                'permissions' => $request->user()?->permissions() ?? [],
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

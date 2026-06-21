@@ -1,6 +1,7 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import { CloudBackground } from '@/components/cloud-background';
 import { GlassPanel } from '@/components/glass-panel';
+import { route } from '@/lib/ziggy';
 import { Link } from '@inertiajs/react';
 
 interface AuthLayoutProps {

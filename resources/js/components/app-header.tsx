@@ -2,7 +2,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { NotificationBellDropdown } from '@/components/notification-bell-dropdown';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
@@ -10,7 +10,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, Search, Bell } from 'lucide-react';
+import { LayoutGrid, Menu, Search, Inbox } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -58,10 +58,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
-                                            {auth.user.role === 'admin' && (
+                                            {auth.permissions?.viewInbox && (
                                                 <Link href="/inbox" className="flex items-center space-x-2 font-medium">
                                                     <Icon iconNode={Menu} className="h-5 w-5" />
-                                                    <span>Inbox / My Task</span>
+                                                    <span>Inbox / Notifikasi</span>
                                                     {(auth.user.unread_notifications_count as number) > 0 && (
                                                         <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
                                                             {auth.user.unread_notifications_count as number}
@@ -104,7 +104,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         )}
                                     </NavigationMenuItem>
                                 ))}
-                                {auth.user.role === 'admin' && (
+                                {auth.permissions?.viewInbox && (
                                     <NavigationMenuItem className="relative flex h-full items-center">
                                         <Link
                                             href="/inbox"
@@ -114,8 +114,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 'h-9 cursor-pointer px-3',
                                             )}
                                         >
-                                            <Icon iconNode={Menu} className="mr-2 h-4 w-4" />
-                                            Inbox / My Task
+                                            <Icon iconNode={Inbox} className="mr-2 h-4 w-4" />
+                                            Inbox / Notifikasi
                                             {(auth.user.unread_notifications_count as number) > 0 && (
                                                 <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
                                                     {auth.user.unread_notifications_count as number}
@@ -132,48 +132,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
 
                     <div className="ml-auto flex items-center space-x-2">
-                        {auth.user.role === 'admin' && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="group relative h-9 w-9 cursor-pointer">
-                                        <Icon iconNode={Bell} className="!size-5 opacity-80 group-hover:opacity-100" />
-                                        {(auth.user.unread_notifications_count as number) > 0 && (
-                                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-neutral-900">
-                                                {auth.user.unread_notifications_count as number}
-                                            </span>
-                                        )}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-80" align="end">
-                                    <div className="flex items-center justify-between px-4 py-2 font-semibold border-b">
-                                        Notifications
-                                    </div>
-                                    <div className="flex flex-col py-1">
-                                        {((auth.user.notifications as any[]) || []).length > 0 ? (
-                                            ((auth.user.notifications as any[]) || []).map((notification) => (
-                                                <Link 
-                                                    key={notification.id} 
-                                                    href={`/spj/${notification.data.spj_id}/edit`} 
-                                                    method="post"
-                                                    data={{ _method: 'get' }}
-                                                    className={cn(
-                                                        "px-4 py-3 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors",
-                                                        notification.read_at === null ? "bg-sky-50 dark:bg-sky-900/20" : ""
-                                                    )}
-                                                >
-                                                    <div className="font-medium">{notification.data.message}</div>
-                                                    <div className="text-xs text-neutral-500 mt-1">{new Date(notification.created_at).toLocaleString()}</div>
-                                                </Link>
-                                            ))
-                                        ) : (
-                                            <div className="px-4 py-3 text-sm text-center text-neutral-500">
-                                                No recent notifications
-                                            </div>
-                                        )}
-                                    </div>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <NotificationBellDropdown />
                         <div className="relative flex items-center space-x-1">
                             <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
