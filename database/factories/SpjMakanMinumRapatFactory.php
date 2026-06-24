@@ -34,7 +34,12 @@ class SpjMakanMinumRapatFactory extends Factory
             'total_harga' => fake()->randomFloat(2, 500000, 5000000),
             'pembayaran_spj' => fake()->boolean(30),
             'tracking_spj' => fake()->randomElement(['Draft', 'Dalam Proses', 'Selesai']),
-            'kasubbag_kasi' => fake()->name(),
+            'kasubbag_kasi' => fake()->randomElement([
+                'Sub Bagian Tata Usaha',
+                'Sub Bagian Keuangan',
+                'Seksi Investasi dan Manajemen Resiko',
+                'Seksi Pembiayaan Perumahan'
+            ]),
             'staf' => fake()->name(),
             'link_spj' => fake()->url(),
         ];

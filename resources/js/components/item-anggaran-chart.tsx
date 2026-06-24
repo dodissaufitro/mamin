@@ -219,16 +219,23 @@ export function ItemAnggaranChart({ data }: Props) {
                                 width={156}
                                 tickLine={false}
                                 axisLine={{ stroke: '#94a3b8' }}
-                                tick={(props) => <YAxisTick {...props} rowsById={rowsById} />}
+                                tick={(props: any) => <YAxisTick {...props} rowsById={rowsById} />}
                             />
                             <Legend
                                 verticalAlign="bottom"
                                 align="center"
-                                wrapperStyle={{ paddingTop: 36 }}
-                                payload={[
-                                    { value: 'Total Item HPS', type: 'square', color: COLOR_TOTAL },
-                                    { value: 'Sudah Digunakan', type: 'square', color: COLOR_DIGUNAKAN },
-                                ]}
+                                content={() => (
+                                    <div className="flex justify-center items-center gap-6 pt-9">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3" style={{ backgroundColor: COLOR_TOTAL }}></div>
+                                            <span className="text-sm text-slate-600 font-medium">Total Item HPS</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3" style={{ backgroundColor: COLOR_DIGUNAKAN }}></div>
+                                            <span className="text-sm text-slate-600 font-medium">Sudah Digunakan</span>
+                                        </div>
+                                    </div>
+                                )}
                             />
                             <Bar dataKey="value" radius={[0, 2, 2, 0]} barSize={18} isAnimationActive={false}>
                                 {rows.map((row) => (
@@ -243,10 +250,6 @@ export function ItemAnggaranChart({ data }: Props) {
                     </ResponsiveContainer>
                 </div>
             </div>
-
-            <p className="mt-2 text-center text-xs text-slate-500">
-                Batang atas (biru) = total anggaran Item HPS · Batang bawah (hijau) = sudah digunakan
-            </p>
         </div>
     );
 }

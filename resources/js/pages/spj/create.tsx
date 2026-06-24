@@ -290,9 +290,10 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                                         <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
                                 <select className={inputClass} value={data.kasubbag_kasi} onChange={e => setData('kasubbag_kasi', e.target.value)}>
                                     <option value="">-- Pilih Kasubbag/Kasi --</option>
-                                    {pics.map(p => (
-                                        <option key={p.id} value={p.nama}>{p.nama}{p.jabatan ? ` (${p.jabatan})` : ''}</option>
-                                    ))}
+                                    <option value="Sub Bagian Tata Usaha">Sub Bagian Tata Usaha</option>
+                                    <option value="Sub Bagian Keuangan">Sub Bagian Keuangan</option>
+                                    <option value="Seksi Investasi dan Manajemen Resiko">Seksi Investasi dan Manajemen Resiko</option>
+                                    <option value="Seksi Pembiayaan Perumahan">Seksi Pembiayaan Perumahan</option>
                                 </select>
                             </InputField>
                             <InputField label="Staf" error={errors.staf}>

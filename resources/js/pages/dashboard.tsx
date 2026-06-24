@@ -161,7 +161,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
         { label: 'Terlambat', value: stats?.terlambat || 0, icon: Clock },
     ];
 
-    const itemsArray = Array.isArray(items) ? items : Object.values(items || {});
+    const itemsArray: ItemHpsStats[] = Array.isArray(items) ? items : (Object.values(items || {}) as ItemHpsStats[]);
     const [selectedId, setSelectedId] = useState<number | null>(itemsArray.length > 0 ? itemsArray[0].id : null);
     const selectedItem = itemsArray.find((i) => i.id === selectedId) || itemsArray[0];
 

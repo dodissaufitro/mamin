@@ -67,9 +67,12 @@ class JenisDokumenController extends Controller
 
     public function destroy(JenisDokumen $jenis_dokuman)
     {
-        if ($jenis_dokuman->itemHps()->exists()) {
-            return redirect()->route('jenis-dokumen.index')
-                ->with('error', 'Jenis dokumen masih digunakan pada Item HPS.');
+        // Hapus file fisik dokumen yang terkait sebelum jenis dokumen dihapus
+        $spjDokumens = \App\Models\SpjDokumen::where('jenis_dokumen_id', $jenis_dokuman->id)->get();
+        foreach ($spjDokumens as $doc) {
+            if ($doc->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($doc->file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($doc->file_path);
+            }
         }
 
         $jenis_dokuman->delete();

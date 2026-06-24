@@ -60,7 +60,7 @@ Route::middleware(['auth'])->group(function () {
 
                 $distribusi = [];
                 $groupedDist = $item->spjList->groupBy(function ($spj) {
-                    return $spj->pic ? $spj->pic->nama : 'Tanpa PIC';
+                    return $spj->kasubbag_kasi ?: 'Tanpa Kasi/Kasubbag';
                 });
                 foreach ($groupedDist as $unit => $spjs) {
                     $unitTerpakai = (float) $spjs->sum('jumlah_order');
