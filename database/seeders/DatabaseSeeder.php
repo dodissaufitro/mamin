@@ -38,10 +38,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
-            PicSeeder::class,
-            PenyediaSeeder::class,
-            ItemHpsSeeder::class,
-            SpjMakanMinumRapatSeeder::class,
+            CurrentStateSeeder::class,
         ]);
     }
 }
