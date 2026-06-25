@@ -51,6 +51,9 @@ class RolePermissionSeeder extends Seeder
         $roleSuperAdmin = Role::firstOrCreate(['name' => 'super_admin']);
         $roleSuperAdmin->syncPermissions($allPermissions);
 
+        $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
+        $roleAdmin->syncPermissions($allPermissions);
+
         $rolePic = Role::firstOrCreate(['name' => 'pic']);
         $rolePic->syncPermissions([
             'dashboard.view',
@@ -69,7 +72,7 @@ class RolePermissionSeeder extends Seeder
         foreach ($users as $user) {
             $rawRole = $user->getAttributes()['role'] ?? null;
             if ($rawRole) {
-                if (in_array($rawRole, ['super_admin', 'pic', 'bendahara'])) {
+                if (in_array($rawRole, ['super_admin', 'admin', 'pic', 'bendahara'])) {
                     if (!$user->hasRole($rawRole)) {
                         $user->assignRole($rawRole);
                     }

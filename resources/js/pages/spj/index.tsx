@@ -98,7 +98,7 @@ export default function SpjIndex({ data }: Props) {
                     title="SPJ Makan Minum Rapat"
                     description="Kelola data SPJ makan dan minum rapat"
                     action={
-                        permissions.createSpj ? (
+                        permissions['spj.create'] ? (
                             <Link href="/spj/create" className={glassBtnPrimaryClass}>
                                 <Plus className="h-4 w-4" /> Tambah SPJ
                             </Link>
@@ -110,7 +110,7 @@ export default function SpjIndex({ data }: Props) {
                     {data.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-slate-500">
                             <p className="text-sm font-medium">Belum ada data SPJ.</p>
-                            {permissions.createSpj && (
+                            {permissions['spj.create'] && (
                                 <Link href="/spj/create" className="mt-3 text-sm font-semibold text-sky-700 hover:underline">
                                     + Tambah sekarang
                                 </Link>
@@ -178,12 +178,12 @@ export default function SpjIndex({ data }: Props) {
                                                         <Link href={`/spj/${item.id}`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Detail">
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
-                                                        {permissions.updateSpj && (
+                                                        {permissions['spj.update'] && (
                                                             <Link href={`/spj/${item.id}/edit`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Edit">
                                                                 <Pencil className="h-4 w-4" />
                                                             </Link>
                                                         )}
-                                                        {permissions.deleteSpj && (
+                                                        {permissions['spj.delete'] && (
                                                             <button onClick={() => handleDelete(item.id)} className="text-rose-600 hover:text-rose-800 transition-colors" title="Hapus">
                                                                 <Trash2 className="h-4 w-4" />
                                                             </button>

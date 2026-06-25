@@ -136,12 +136,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('permission:spj.view')->group(function () {
         Route::get('spj', [SpjMakanMinumRapatController::class, 'index'])->name('spj.index');
-        Route::get('spj/{spj}', [SpjMakanMinumRapatController::class, 'show'])->name('spj.show');
     });
 
     Route::middleware('permission:spj.create')->group(function () {
         Route::get('spj/create', [SpjMakanMinumRapatController::class, 'create'])->name('spj.create');
         Route::post('spj', [SpjMakanMinumRapatController::class, 'store'])->name('spj.store');
+    });
+
+    Route::middleware('permission:spj.view')->group(function () {
+        Route::get('spj/{spj}', [SpjMakanMinumRapatController::class, 'show'])->name('spj.show');
     });
 
     Route::middleware('permission:spj.update')->group(function () {
