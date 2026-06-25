@@ -3,15 +3,17 @@ import { ClipboardList, FileCheck2, LayoutGrid, Package, Store, UserCog, Users }
 
 export function getNavItems(auth: SharedData['auth']): NavItem[] {
     const permissions = auth.permissions ?? {};
-    const items: NavItem[] = [
-        {
+    const items: NavItem[] = [];
+
+    if (permissions['dashboard.view']) {
+        items.push({
             title: 'Dashboard',
             url: '/dashboard',
             icon: LayoutGrid,
-        },
-    ];
+        });
+    }
 
-    if (permissions.viewSpj) {
+    if (permissions['spj.view']) {
         items.push({
             title: 'SPJ Makan Minum Rapat',
             url: '/spj',
@@ -19,35 +21,50 @@ export function getNavItems(auth: SharedData['auth']): NavItem[] {
         });
     }
 
-    if (permissions.manageMasterData) {
-        items.push(
-            {
-                title: 'Data PIC',
-                url: '/pic',
-                icon: Users,
-            },
-            {
-                title: 'Data Penyedia',
-                url: '/penyedia',
-                icon: Store,
-            },
-            {
-                title: 'Item HPS',
-                url: '/item-hps',
-                icon: Package,
-            },
-            {
-                title: 'Dokumen Berlaku',
-                url: '/jenis-dokumen',
-                icon: FileCheck2,
-            },
-        );
+    if (permissions['pic.view']) {
+        items.push({
+            title: 'Data PIC',
+            url: '/pic',
+            icon: Users,
+        });
+    }
+    
+    if (permissions['penyedia.view']) {
+        items.push({
+            title: 'Data Penyedia',
+            url: '/penyedia',
+            icon: Store,
+        });
+    }
+    
+    if (permissions['item_hps.view']) {
+        items.push({
+            title: 'Item HPS',
+            url: '/item-hps',
+            icon: Package,
+        });
+    }
+    
+    if (permissions['jenis_dokumen.view']) {
+        items.push({
+            title: 'Dokumen Berlaku',
+            url: '/jenis-dokumen',
+            icon: FileCheck2,
+        });
     }
 
-    if (permissions.manageUsers) {
+    if (permissions['users.view']) {
         items.push({
             title: 'Kelola User',
             url: '/users',
+            icon: UserCog,
+        });
+    }
+    
+    if (permissions['roles.view']) {
+        items.push({
+            title: 'Manajemen Role',
+            url: '/roles',
             icon: UserCog,
         });
     }

@@ -32,18 +32,24 @@ interface SpjItem {
     pic: { id: number; nama: string } | null;
     penyedia: { id: number; nama: string } | null;
     kegiatan: string | null;
-    jumlah_order: number | null;
-    item_hps?: {
+    spj_items?: {
         id: number;
-        nama_item: string;
-        jenis_dokumens?: JenisDokumenItem[];
-    } | null;
+        jumlah_order: number;
+        total_harga: number | string;
+        item_hps?: {
+            id: number;
+            nama_item: string;
+            jenis_dokumens?: JenisDokumenItem[];
+        } | null;
+    }[];
     spj_dokumens?: SpjDokumenItem[];
     kelengkapan_dokumen: boolean;
     pembayaran_spj: boolean;
     kasubbag_kasi: string | null;
     staf: string | null;
     link_spj: string | null;
+    tracking_spj: string | null;
+    total_harga: number | string | null;
 }
 
 interface Stats {
@@ -90,7 +96,11 @@ function formatDate(dateStr: string | null) {
 }
 
 function dokumenProgress(item: SpjItem): DokumenProgress {
-    const requiredIds = item.item_hps?.jenis_dokumens?.map((d) => d.id) ?? [];
+    const requiredIds = Array.from(new Set(
+        (item.spj_items ?? [])
+            .flatMap(i => i.item_hps?.jenis_dokumens ?? [])
+            .map(d => d.id)
+    ));
     const uploadedIds = item.spj_dokumens?.map((d) => d.jenis_dokumen_id) ?? [];
     const done = requiredIds.filter((id) => uploadedIds.includes(id)).length;
 
@@ -163,7 +173,12 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
 
     const itemsArray: ItemHpsStats[] = Array.isArray(items) ? items : (Object.values(items || {}) as ItemHpsStats[]);
     const [selectedId, setSelectedId] = useState<number | null>(itemsArray.length > 0 ? itemsArray[0].id : null);
+    const [searchQuery, setSearchQuery] = useState('');
     const selectedItem = itemsArray.find((i) => i.id === selectedId) || itemsArray[0];
+
+    const filteredItems = itemsArray.filter(item => 
+        item.nama_item.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const todayDateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -210,26 +225,39 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                         <div className="flex flex-col md:flex-row gap-6">
                             {/* Sidebar Items */}
                             <div className="w-full md:w-64 flex-shrink-0">
-                                <div className="mb-3">
+                                <div className="mb-3 flex items-center justify-between">
                                     <h3 className="text-xs font-bold text-slate-700 tracking-wider">Konsumsi</h3>
                                 </div>
-                                <div className="flex flex-col gap-1">
-                                    {itemsArray.map((item) => {
-                                        const isActive = item.id === selectedId;
-                                        return (
-                                            <button
-                                                key={item.id}
-                                                onClick={() => setSelectedId(item.id)}
-                                                className={`w-full rounded-lg px-4 py-2.5 text-left text-sm font-bold transition-all ${
-                                                    isActive
-                                                        ? 'bg-blue-200 text-slate-800'
-                                                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                                                }`}
-                                            >
-                                                {item.nama_item}
-                                            </button>
-                                        );
-                                    })}
+                                <div className="mb-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Cari item..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full rounded-lg border-slate-200 bg-white/50 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-sky-500 focus:ring-sky-500"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-1 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {filteredItems.length === 0 ? (
+                                        <p className="text-center text-xs text-slate-400 py-4">Item tidak ditemukan</p>
+                                    ) : (
+                                        filteredItems.map((item) => {
+                                            const isActive = item.id === selectedId;
+                                            return (
+                                                <button
+                                                    key={item.id}
+                                                    onClick={() => setSelectedId(item.id)}
+                                                    className={`w-full rounded-lg px-4 py-2.5 text-left text-sm font-bold transition-all ${
+                                                        isActive
+                                                            ? 'bg-blue-200 text-slate-800'
+                                                            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                                                    }`}
+                                                >
+                                                    {item.nama_item}
+                                                </button>
+                                            );
+                                        })
+                                    )}
                                 </div>
                             </div>
 
@@ -264,9 +292,9 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                     {/* Distribusi */}
                                     <div>
                                         <h4 className="mb-3 text-xs font-bold text-slate-700">Distribusi Pelaksanaan</h4>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-2 gap-3">
                                             {selectedItem.distribusi.length === 0 ? (
-                                                <div className="col-span-3 py-4 text-sm text-slate-400">Belum ada distribusi</div>
+                                                <div className="col-span-2 py-4 text-sm text-slate-400">Belum ada distribusi</div>
                                             ) : (
                                                 selectedItem.distribusi.map((dist, idx) => (
                                                     <div key={idx} className="flex flex-col items-center justify-center rounded-[40px] bg-sky-200/80 p-5 text-center shadow-sm">
@@ -335,7 +363,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                 <tbody className="divide-y divide-slate-200/70">
                                     {recent?.map((item, index) => {
                                         const { done, total, pct } = dokumenProgress(item);
-                                        const itemHps = itemsArray.find(i => String(i.id) === String((item as any).item_hps_id));
+                                        const itemsText = item.spj_items?.map(i => i.item_hps?.nama_item).filter(Boolean).join(', ') || '-';
                                         
                                         return (
                                             <tr key={item.id} className="glass-table-row">
@@ -344,10 +372,10 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                     <p className="truncate font-semibold text-slate-900">{item.kegiatan ?? '-'}</p>
                                                 </td>
                                                 <td className="max-w-[100px] px-4 py-3">
-                                                    <p className="truncate text-slate-700">{itemHps?.nama_item ?? '-'}</p>
+                                                    <p className="truncate text-slate-700" title={itemsText}>{itemsText}</p>
                                                 </td>
                                                 <td className="px-4 py-3 font-semibold text-slate-700">
-                                                    {(item as any).total_harga ? `Rp ${new Intl.NumberFormat('id-ID').format((item as any).total_harga)}` : '-'}
+                                                    {item.total_harga ? `Rp ${new Intl.NumberFormat('id-ID').format(Number(item.total_harga))}` : '-'}
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-slate-700">{formatDate(item.tanggal_kegiatan)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-slate-700">{formatDate(item.deadline_spj)}</td>
@@ -371,9 +399,20 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
-                                                    <span className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-[10px] font-bold text-white shadow-sm ${(item as any).tracking_spj === 'Dokumen Belum Lengkap' ? 'bg-rose-500' : 'bg-sky-400'}`}>
-                                                        {(item as any).tracking_spj ?? '-'}
-                                                    </span>
+                                                    {(() => {
+                                                        let colorClass = "border-sky-300 bg-sky-50 text-sky-700";
+                                                        if (item.tracking_spj === 'Selesai') {
+                                                            colorClass = "border-emerald-300 bg-emerald-100 text-emerald-800";
+                                                        } else if (item.tracking_spj === 'Dokumen Tidak Lengkap' || item.tracking_spj === 'Menunggu Kelengkapan') {
+                                                            colorClass = "border-red-300 bg-red-100 text-red-800";
+                                                        }
+                                                        
+                                                        return (
+                                                            <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${colorClass}`}>
+                                                                {item.tracking_spj ?? '-'}
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
                                                     <div className="flex items-center justify-center gap-2 text-slate-400">

@@ -3,6 +3,7 @@ import { calcTotalHarga, formatRupiah } from '@/lib/spj-format';
 import { type JenisDokumenItem } from '@/lib/dokumen';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
+import { Trash2, Plus } from 'lucide-react';
 
 interface PicItem { id: number; nama: string; jabatan: string | null; }
 interface PenyediaItem { id: number; nama: string; }
@@ -52,13 +53,10 @@ type FormData = {
     pic_id: string;
     kegiatan: string;
     penyedia_id: string;
-    item_hps_id: string;
-    jumlah_order: string;
-    pembayaran_spj: boolean;
+    jenis_mamin: string;
+    items: { item_hps_id: string; jumlah_order: string }[];
     tracking_spj: string;
     kasubbag_kasi: string;
-    staf: string;
-    link_spj: string;
 };
 
 function InputField({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
@@ -82,34 +80,28 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
         pic_id: '',
         kegiatan: '',
         penyedia_id: '',
-        item_hps_id: '',
-        jumlah_order: '',
-        pembayaran_spj: false,
+        jenis_mamin: 'snack dan makanan',
+        items: [{ item_hps_id: '', jumlah_order: '' }],
         tracking_spj: '',
         kasubbag_kasi: '',
-        staf: '',
-        link_spj: '',
     });
-
-    const selectedItem = items.find((i) => String(i.id) === data.item_hps_id);
-    const maxOrder = selectedItem?.available_volume ?? 0;
-    const totalHarga =
-        selectedItem && data.jumlah_order
-            ? calcTotalHarga(data.jumlah_order, selectedItem.harga_unit)
-            : 0;
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const qty = parseFloat(data.jumlah_order);
-        if (!data.item_hps_id) {
+        
+        // Cek validasi secara manual sebelum submit (sama seperti logic di button disabled)
+        const hasInvalid = data.items.some(formItem => {
+            const qty = parseFloat(formItem.jumlah_order);
+            const selItem = items.find((i) => String(i.id) === formItem.item_hps_id);
+            if (!formItem.item_hps_id || !qty || qty <= 0) return true;
+            if (selItem && qty > selItem.available_volume) return true;
+            return false;
+        });
+
+        if (hasInvalid || data.items.length === 0) {
             return;
         }
-        if (!qty || qty <= 0) {
-            return;
-        }
-        if (selectedItem && qty > selectedItem.available_volume) {
-            return;
-        }
+        
         post('/spj');
     }
 
@@ -143,6 +135,21 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                             <InputField label="Kegiatan" error={errors.kegiatan}>
                                 <input type="text" className={inputClass} value={data.kegiatan} onChange={e => setData('kegiatan', e.target.value)} placeholder="Nama kegiatan" />
                             </InputField>
+                            <InputField label="Jenis Mamin" error={errors.jenis_mamin}>
+                                <select className={inputClass} value={data.jenis_mamin} onChange={e => {
+                                    const newJenis = e.target.value as any;
+                                    setData(prev => ({
+                                        ...prev,
+                                        jenis_mamin: newJenis,
+                                        items: [{ item_hps_id: '', jumlah_order: '' }],
+                                        kasubbag_kasi: newJenis === 'kebutuhan dapur' ? 'Sub Bagian Tata Usaha' : prev.kasubbag_kasi,
+                                        pic_id: newJenis === 'kebutuhan dapur' ? '' : prev.pic_id,
+                                    }));
+                                }}>
+                                    <option value="snack dan makanan">Snack dan Makanan</option>
+                                    <option value="kebutuhan dapur">Kebutuhan Dapur</option>
+                                </select>
+                            </InputField>
                             <InputField label="Penyedia" error={errors.penyedia_id}>
                                 <select className={inputClass} value={data.penyedia_id} onChange={e => setData('penyedia_id', e.target.value)}>
                                     <option value="">-- Pilih Penyedia --</option>
@@ -154,158 +161,152 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                             <InputField label="PIC Penanggung Jawab" error={errors.pic_id}>
                                 <select className={inputClass} value={data.pic_id} onChange={e => setData('pic_id', e.target.value)}>
                                     <option value="">-- Pilih PIC --</option>
-                                    {pics.map(p => (
+                                    {pics.filter(p => data.jenis_mamin !== 'kebutuhan dapur' || p.jabatan?.includes('TU')).map(p => (
                                         <option key={p.id} value={p.id}>{p.nama}{p.jabatan ? ` (${p.jabatan})` : ''}</option>
                                     ))}
                                 </select>
                             </InputField>
-                            <InputField label="Item HPS" error={errors.item_hps_id}>
-                                <select
-                                    className={inputClass}
-                                    value={data.item_hps_id}
-                                    onChange={(e) => {
-                                        setData((prev) => ({
-                                            ...prev,
-                                            item_hps_id: e.target.value,
-                                            jumlah_order: '',
-                                        }));
-                                    }}
-                                >
-                                    <option value="">-- Pilih Item --</option>
-                                    {items.map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                            {item.nama_item} (tersedia: {formatQty(item.available_volume)})
-                                        </option>
-                                    ))}
-                                </select>
-                            </InputField>
-                            <InputField label="Jumlah Order" error={errors.jumlah_order}>
-                                <input
-                                    type="number"
-                                    className={inputClass}
-                                    value={data.jumlah_order}
-                                    onChange={(e) => setData('jumlah_order', e.target.value)}
-                                    placeholder="0"
-                                    min="0.01"
-                                    step="0.01"
-                                    max={maxOrder > 0 ? maxOrder : undefined}
-                                    disabled={!data.item_hps_id}
-                                />
-                                {selectedItem && (
-                                    <p className="text-xs text-slate-600">
-                                        Volume tersedia: <span className="font-semibold">{formatQty(selectedItem.available_volume)}</span>
-                                        {parseFloat(data.jumlah_order) > selectedItem.available_volume && (
-                                            <span className="ml-2 text-red-600">Melebihi volume tersedia</span>
-                                        )}
-                                    </p>
-                                )}
-                            </InputField>
-                            <InputField label="Total Harga">
-                                <p
-                                    className={`${inputClass} bg-violet-50 font-semibold text-violet-800 ${!selectedItem || !data.jumlah_order ? 'text-slate-400' : ''}`}
-                                >
-                                    {selectedItem && data.jumlah_order ? formatRupiah(totalHarga) : '-'}
-                                </p>
-                            </InputField>
-                        </div>
-                    </div>
-
-                    {selectedItem && (
-                        <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
-                            <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
-                                Dokumen yang Berlaku
-                            </h2>
-                            {selectedItem.jenis_dokumens.length === 0 ? (
-                                <p className="text-sm text-slate-500">
-                                    Belum ada dokumen yang diaktifkan pada Item HPS ini.
-                                </p>
-                            ) : (
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedItem.jenis_dokumens.map((dokumen) => (
-                                        <span
-                                            key={dokumen.id}
-                                            className="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-800"
-                                        >
-                                            {dokumen.nama}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                            <p className="mt-3 text-xs text-slate-500">
-                                Upload file dokumen dilakukan setelah SPJ dibuat, melalui halaman Edit SPJ.
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Tracking SPJ */}
-                    <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
-                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking SPJ</h2>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                            {trackingOptions.map(opt => (
-                                <label key={opt} className="flex cursor-pointer items-start gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
-                                    <input
-                                        type="radio"
-                                        name="tracking_spj"
-                                        className="mt-0.5 h-4 w-4 accent-violet-600"
-                                        checked={data.tracking_spj === opt}
-                                        onChange={() => setData('tracking_spj', opt)}
-                                    />
-                                    <span className="text-sm text-gray-700 dark:text-gray-300 leading-tight">{opt}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Pembayaran */}
-                    <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
-                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Pembayaran</h2>
-                        <div className="flex gap-4">
-                            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 hover:bg-emerald-100">
-                                <input
-                                    type="radio"
-                                    name="pembayaran_spj"
-                                    className="h-4 w-4 accent-emerald-600"
-                                    checked={data.pembayaran_spj === true}
-                                    onChange={() => setData('pembayaran_spj', true)}
-                                />
-                                <span className="text-sm font-medium text-emerald-800">Pembayaran SPJ</span>
-                            </label>
-                            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 hover:bg-rose-100">
-                                <input
-                                    type="radio"
-                                    name="pembayaran_spj"
-                                    className="h-4 w-4 accent-rose-600"
-                                    checked={data.pembayaran_spj === false}
-                                    onChange={() => setData('pembayaran_spj', false)}
-                                />
-                                <span className="text-sm font-medium text-rose-800">Belum Pembayaran SPJ</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* PIC & Link */}
-                                        <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
-                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">PIC & Link</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                                                        <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
-                                <select className={inputClass} value={data.kasubbag_kasi} onChange={e => setData('kasubbag_kasi', e.target.value)}>
-                                    <option value="">-- Pilih Kasubbag/Kasi --</option>
-                                    <option value="Sub Bagian Tata Usaha">Sub Bagian Tata Usaha</option>
-                                    <option value="Sub Bagian Keuangan">Sub Bagian Keuangan</option>
-                                    <option value="Seksi Investasi dan Manajemen Resiko">Seksi Investasi dan Manajemen Resiko</option>
-                                    <option value="Seksi Pembiayaan Perumahan">Seksi Pembiayaan Perumahan</option>
-                                </select>
-                            </InputField>
-                            <InputField label="Staf" error={errors.staf}>
-                                <input type="text" className={inputClass} value={data.staf} onChange={e => setData('staf', e.target.value)} placeholder="Nama staf" />
-                            </InputField>
                             <div className="sm:col-span-2">
-                                <InputField label="Link SPJ" error={errors.link_spj}>
-                                    <input type="text" className={inputClass} value={data.link_spj} onChange={e => setData('link_spj', e.target.value)} placeholder="https://..." />
+                                <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
+                                    <select 
+                                        className={`${inputClass} ${data.jenis_mamin === 'kebutuhan dapur' ? 'bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800' : ''}`} 
+                                        value={data.kasubbag_kasi} 
+                                        onChange={e => setData('kasubbag_kasi', e.target.value)}
+                                        disabled={data.jenis_mamin === 'kebutuhan dapur'}
+                                    >
+                                        {data.jenis_mamin !== 'kebutuhan dapur' && <option value="">-- Pilih Kasubbag/Kasi --</option>}
+                                        <option value="Sub Bagian Tata Usaha">Sub Bagian Tata Usaha</option>
+                                        {data.jenis_mamin !== 'kebutuhan dapur' && (
+                                            <>
+                                                <option value="Sub Bagian Keuangan">Sub Bagian Keuangan</option>
+                                                <option value="Seksi Investasi dan Manajemen Resiko">Seksi Investasi dan Manajemen Resiko</option>
+                                                <option value="Seksi Pembiayaan Perumahan">Seksi Pembiayaan Perumahan</option>
+                                            </>
+                                        )}
+                                    </select>
                                 </InputField>
+                            </div>
+
+                            <div className="sm:col-span-2 mt-2">
+                                <label className="mb-2 block text-sm font-semibold text-violet-700 dark:text-violet-300">Daftar Item HPS</label>
+                                {data.items.map((formItem, idx) => {
+                                    const selectedItem = items.find((i) => String(i.id) === formItem.item_hps_id);
+                                    const subtotal = selectedItem && formItem.jumlah_order ? calcTotalHarga(formItem.jumlah_order, selectedItem.harga_unit) : 0;
+                                    
+                                    return (
+                                        <div key={idx} className="mb-3 flex flex-col gap-4 rounded-xl border border-violet-100 bg-violet-50/50 p-4 dark:border-violet-800/50 dark:bg-violet-900/10 sm:flex-row sm:items-start">
+                                            <div className="flex-1">
+                                                <InputField label={`Item HPS ${idx + 1}`} error={(errors as any)[`items.${idx}.item_hps_id`]}>
+                                                    <select
+                                                        className={inputClass}
+                                                        value={formItem.item_hps_id}
+                                                        onChange={(e) => {
+                                                            const newItems = [...data.items];
+                                                            newItems[idx].item_hps_id = e.target.value;
+                                                            newItems[idx].jumlah_order = '';
+                                                            setData('items', newItems);
+                                                        }}
+                                                    >
+                                                        <option value="">-- Pilih Item --</option>
+                                                        {items.map((item) => {
+                                                            const currentlyOrdered = data.items.filter(i => i.item_hps_id === String(item.id)).reduce((acc, i) => acc + (parseFloat(i.jumlah_order) || 0), 0);
+                                                            const remaining = item.available_volume - currentlyOrdered;
+                                                            
+                                                            return (
+                                                                <option key={item.id} value={item.id}>
+                                                                    {item.nama_item} (tersedia: {formatQty(remaining)})
+                                                                </option>
+                                                            );
+                                                        })}
+                                                    </select>
+                                                </InputField>
+                                            </div>
+                                            <div className="w-full sm:w-32">
+                                                <InputField label="Jumlah" error={(errors as any)[`items.${idx}.jumlah_order`]}>
+                                                    <input
+                                                        type="number"
+                                                        className={`${inputClass} ${(selectedItem && parseFloat(formItem.jumlah_order) > (selectedItem.available_volume - data.items.filter((_, i) => i !== idx && data.items[i].item_hps_id === String(selectedItem.id)).reduce((acc, i) => acc + (parseFloat(i.jumlah_order) || 0), 0))) ? 'border-red-500 bg-red-50 text-red-700' : ''}`}
+                                                        value={formItem.jumlah_order}
+                                                        onChange={(e) => {
+                                                            const newItems = [...data.items];
+                                                            newItems[idx].jumlah_order = e.target.value;
+                                                            setData('items', newItems);
+                                                        }}
+                                                        placeholder="0"
+                                                        min="0.01"
+                                                        step="0.01"
+                                                        disabled={!formItem.item_hps_id}
+                                                    />
+                                                    {selectedItem && (
+                                                        <div className="mt-1 flex flex-col gap-0.5">
+                                                            {(() => {
+                                                                const otherRowsOrdered = data.items.filter((_, i) => i !== idx && data.items[i].item_hps_id === String(selectedItem.id)).reduce((acc, i) => acc + (parseFloat(i.jumlah_order) || 0), 0);
+                                                                const maxAllowed = selectedItem.available_volume - otherRowsOrdered;
+                                                                const currentVal = parseFloat(formItem.jumlah_order) || 0;
+                                                                if (currentVal > maxAllowed) {
+                                                                    return <span className="text-xs font-semibold text-red-600">Maks. {formatQty(maxAllowed)}</span>;
+                                                                }
+                                                                return null;
+                                                            })()}
+                                                        </div>
+                                                    )}
+                                                </InputField>
+                                            </div>
+                                            <div className="w-full sm:w-48">
+                                                <InputField label="Subtotal">
+                                                    <p className={`${inputClass} bg-white font-semibold text-violet-800 ${!selectedItem || !formItem.jumlah_order ? 'text-slate-400' : ''}`}>
+                                                        {selectedItem && formItem.jumlah_order ? formatRupiah(subtotal) : '-'}
+                                                    </p>
+                                                </InputField>
+                                            </div>
+                                            
+                                            {data.jenis_mamin === 'kebutuhan dapur' && data.items.length > 1 && (
+                                                <div className="pt-6">
+                                                    <button type="button" onClick={() => {
+                                                        const newItems = data.items.filter((_, i) => i !== idx);
+                                                        setData('items', newItems);
+                                                    }} className="flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-900/30">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                
+                                {data.jenis_mamin === 'kebutuhan dapur' && (
+                                    <div className="mt-2 flex justify-start">
+                                        <button
+                                            type="button"
+                                            onClick={() => setData('items', [...data.items, { item_hps_id: '', jumlah_order: '' }])}
+                                            className="flex items-center gap-2 rounded-lg border border-violet-300 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300 dark:hover:bg-violet-900/20"
+                                        >
+                                            <Plus className="h-4 w-4" /> Tambah Item
+                                        </button>
+                                    </div>
+                                )}
+                                
+                                <div className="mt-4 flex justify-end">
+                                    <div className="rounded-lg bg-violet-600 px-6 py-3 text-white shadow-md">
+                                        <p className="text-xs text-violet-200 uppercase tracking-wide">Total Harga</p>
+                                        <p className="text-xl font-bold">
+                                            {formatRupiah(data.items.reduce((acc, formItem) => {
+                                                const sel = items.find((i) => String(i.id) === formItem.item_hps_id);
+                                                return acc + (sel && formItem.jumlah_order ? calcTotalHarga(formItem.jumlah_order, sel.harga_unit) : 0);
+                                            }, 0))}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+
+
+                    {/* Pembayaran */}
+
+
+
 
                     {/* Actions */}
                     <div className="flex items-center justify-end gap-3">
@@ -316,10 +317,17 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                             type="submit"
                             disabled={
                                 processing ||
-                                !data.item_hps_id ||
-                                !data.jumlah_order ||
-                                parseFloat(data.jumlah_order) <= 0 ||
-                                (!!selectedItem && parseFloat(data.jumlah_order) > selectedItem.available_volume)
+                                data.items.some((formItem, idx) => {
+                                    const qty = parseFloat(formItem.jumlah_order);
+                                    const selectedItem = items.find((i) => String(i.id) === formItem.item_hps_id);
+                                    if (!formItem.item_hps_id || !qty || qty <= 0) return true;
+                                    if (selectedItem) {
+                                        const otherRowsOrdered = data.items.filter((_, i) => i !== idx && data.items[i].item_hps_id === String(selectedItem.id)).reduce((acc, i) => acc + (parseFloat(i.jumlah_order) || 0), 0);
+                                        if (qty > (selectedItem.available_volume - otherRowsOrdered)) return true;
+                                    }
+                                    return false;
+                                }) ||
+                                data.items.length === 0
                             }
                             className="rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60 transition-colors shadow-md shadow-violet-200 dark:shadow-violet-900/30"
                         >

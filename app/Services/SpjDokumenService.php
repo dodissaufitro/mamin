@@ -28,8 +28,16 @@ class SpjDokumenService
 
     public function syncUploads(SpjMakanMinumRapat $spj, Request $request): void
     {
-        $spj->loadMissing('itemHps.jenisDokumens');
-        $allowedIds = $spj->itemHps?->jenisDokumens->pluck('id')->all() ?? [];
+        $spj->loadMissing('spjItems.itemHps.jenisDokumens');
+        $allowedIds = [];
+        foreach ($spj->spjItems as $spjItem) {
+            if ($spjItem->itemHps && $spjItem->itemHps->jenisDokumens) {
+                foreach ($spjItem->itemHps->jenisDokumens->pluck('id') as $id) {
+                    $allowedIds[] = $id;
+                }
+            }
+        }
+        $allowedIds = array_unique($allowedIds);
 
         if ($allowedIds === []) {
             return;
@@ -131,19 +139,34 @@ class SpjDokumenService
 
     public function refreshKelengkapan(SpjMakanMinumRapat $spj): void
     {
-        $spj->loadMissing('itemHps.jenisDokumens', 'spjDokumens');
-        $requiredIds = $spj->itemHps?->jenisDokumens->pluck('id') ?? collect();
+        $spj->loadMissing('spjItems.itemHps.jenisDokumens', 'spjDokumens');
+        
+        $requiredIds = collect();
+        foreach ($spj->spjItems as $spjItem) {
+            if ($spjItem->itemHps && $spjItem->itemHps->jenisDokumens) {
+                $requiredIds = $requiredIds->merge($spjItem->itemHps->jenisDokumens->pluck('id'));
+            }
+        }
+        $requiredIds = $requiredIds->unique();
 
         if ($requiredIds->isEmpty()) {
             $spj->update(['kelengkapan_dokumen' => false]);
-
             return;
         }
 
         $uploadedIds = $spj->spjDokumens->pluck('jenis_dokumen_id');
         $complete = $requiredIds->every(fn (int $id) => $uploadedIds->contains($id));
 
-        $spj->update(['kelengkapan_dokumen' => $complete]);
+        $updateData = ['kelengkapan_dokumen' => $complete];
+
+        if ($complete) {
+            $currentTracking = $spj->tracking_spj;
+            if (empty($currentTracking) || in_array($currentTracking, ['Dokumen Tidak Lengkap', 'Menunggu Kelengkapan'], true)) {
+                $updateData['tracking_spj'] = 'SPPD & SOPD';
+            }
+        }
+
+        $spj->update($updateData);
     }
 
     /**
@@ -151,14 +174,21 @@ class SpjDokumenService
      */
     public function progressFor(SpjMakanMinumRapat $spj): array
     {
-        $spj->loadMissing('itemHps.jenisDokumens', 'spjDokumens');
-        $total = $spj->itemHps?->jenisDokumens->count() ?? 0;
+        $spj->loadMissing('spjItems.itemHps.jenisDokumens', 'spjDokumens');
+        
+        $requiredIds = collect();
+        foreach ($spj->spjItems as $spjItem) {
+            if ($spjItem->itemHps && $spjItem->itemHps->jenisDokumens) {
+                $requiredIds = $requiredIds->merge($spjItem->itemHps->jenisDokumens->pluck('id'));
+            }
+        }
+        $requiredIds = $requiredIds->unique();
+        $total = $requiredIds->count();
 
         if ($total === 0) {
             return ['done' => 0, 'total' => 0, 'pct' => 0];
         }
 
-        $requiredIds = $spj->itemHps->jenisDokumens->pluck('id');
         $uploadedIds = $spj->spjDokumens->pluck('jenis_dokumen_id');
         $done = $requiredIds->filter(fn (int $id) => $uploadedIds->contains($id))->count();
 

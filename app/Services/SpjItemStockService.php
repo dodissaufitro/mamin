@@ -9,48 +9,72 @@ use Illuminate\Validation\ValidationException;
 class SpjItemStockService
 {
     /**
-     * @return array<string, mixed>
+     * Validate an array of items
+     * @param array $items Array of ['item_hps_id' => id, 'jumlah_order' => qty]
+     * @return array Array of validated items
      */
-    public function validateItemOrder(?int $itemId, mixed $jumlahOrder, ?SpjMakanMinumRapat $existing = null): array
+    public function validateItems(array $items, ?SpjMakanMinumRapat $existing = null): array
     {
-        $qty = (float) ($jumlahOrder ?? 0);
-
-        if ($qty <= 0) {
+        if (empty($items)) {
             throw ValidationException::withMessages([
-                'jumlah_order' => 'Jumlah order harus lebih dari 0.',
+                'items' => 'Minimal pilih 1 item.',
             ]);
         }
 
-        if (! $itemId) {
-            throw ValidationException::withMessages([
-                'item_hps_id' => 'Pilih item terlebih dahulu.',
-            ]);
+        $validatedItems = [];
+        $itemCounts = [];
+
+        foreach ($items as $index => $itemData) {
+            $itemId = $itemData['item_hps_id'] ?? null;
+            $qty = (float) ($itemData['jumlah_order'] ?? 0);
+
+            if ($qty <= 0) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.jumlah_order" => 'Jumlah order harus lebih dari 0.',
+                ]);
+            }
+
+            if (! $itemId) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.item_hps_id" => 'Pilih item terlebih dahulu.',
+                ]);
+            }
+
+            if (isset($itemCounts[$itemId])) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.item_hps_id" => 'Item tidak boleh duplikat.',
+                ]);
+            }
+            $itemCounts[$itemId] = true;
+
+            $item = ItemHps::query()->find($itemId);
+
+            if (! $item) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.item_hps_id" => 'Item tidak ditemukan.',
+                ]);
+            }
+
+            $available = (float) $item->volume;
+
+            if ($existing) {
+                $addedBack = $existing->spjItems->where('item_hps_id', $itemId)->sum('jumlah_order');
+                $available += (float) $addedBack;
+            }
+
+            if ($qty > $available) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.jumlah_order" => sprintf(
+                        'Jumlah order melebihi volume tersedia (maks. %s).',
+                        $this->formatNumber($available)
+                    ),
+                ]);
+            }
+
+            $validatedItems[] = ['item' => $item, 'qty' => $qty];
         }
 
-        $item = ItemHps::query()->find($itemId);
-
-        if (! $item) {
-            throw ValidationException::withMessages([
-                'item_hps_id' => 'Item tidak ditemukan.',
-            ]);
-        }
-
-        $available = (float) $item->volume;
-
-        if ($existing && (int) $existing->item_hps_id === (int) $itemId) {
-            $available += (float) ($existing->jumlah_order ?? 0);
-        }
-
-        if ($qty > $available) {
-            throw ValidationException::withMessages([
-                'jumlah_order' => sprintf(
-                    'Jumlah order melebihi volume tersedia (maks. %s).',
-                    $this->formatNumber($available)
-                ),
-            ]);
-        }
-
-        return ['item' => $item, 'qty' => $qty];
+        return $validatedItems;
     }
 
     public function deduct(ItemHps $item, float $qty): void
@@ -67,18 +91,23 @@ class SpjItemStockService
         ItemHps::query()->whereKey($itemId)->increment('volume', (float) $qty);
     }
 
-    public function applyUpdate(SpjMakanMinumRapat $spj, ?int $newItemId, float $newQty): void
+    public function applyUpdate(SpjMakanMinumRapat $spj, array $newItemsData): void
     {
-        $oldItemId = $spj->item_hps_id;
-        $oldQty = (float) ($spj->jumlah_order ?? 0);
-
-        if ($oldItemId && $oldQty > 0) {
-            $this->restore($oldItemId, $oldQty);
+        // Restore all old items
+        foreach ($spj->spjItems as $oldItem) {
+            $this->restore($oldItem->item_hps_id, $oldItem->jumlah_order);
         }
 
-        if ($newItemId && $newQty > 0) {
-            $item = ItemHps::query()->findOrFail($newItemId);
-            $this->deduct($item, $newQty);
+        // Deduct all new items
+        foreach ($newItemsData as $newItem) {
+            $itemId = $newItem['item_hps_id'] ?? null;
+            $qty = (float) ($newItem['jumlah_order'] ?? 0);
+            if ($itemId && $qty > 0) {
+                $item = ItemHps::query()->find($itemId);
+                if ($item) {
+                    $this->deduct($item, $qty);
+                }
+            }
         }
     }
 
@@ -87,6 +116,10 @@ class SpjItemStockService
      */
     public function itemsForForm(?SpjMakanMinumRapat $spj = null): array
     {
+        if ($spj && !$spj->relationLoaded('spjItems')) {
+            $spj->load('spjItems');
+        }
+
         return ItemHps::query()
             ->with('jenisDokumens:id,nama,kode')
             ->orderBy('nama_item')
@@ -94,8 +127,9 @@ class SpjItemStockService
             ->map(function (ItemHps $item) use ($spj) {
                 $available = (float) $item->volume;
 
-                if ($spj && (int) $spj->item_hps_id === (int) $item->id) {
-                    $available += (float) ($spj->jumlah_order ?? 0);
+                if ($spj) {
+                    $addedBack = $spj->spjItems->where('item_hps_id', $item->id)->sum('jumlah_order');
+                    $available += (float) $addedBack;
                 }
 
                 return [

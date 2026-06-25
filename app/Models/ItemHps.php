@@ -27,9 +27,9 @@ class ItemHps extends Model
         ];
     }
 
-    public function spjList(): HasMany
+    public function spjItems(): HasMany
     {
-        return $this->hasMany(SpjMakanMinumRapat::class, 'item_hps_id');
+        return $this->hasMany(SpjItem::class, 'item_hps_id');
     }
 
     public function jenisDokumens(): BelongsToMany

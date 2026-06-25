@@ -51,25 +51,23 @@ export default function JenisDokumenIndex({ jenisDokumens }: Props) {
                             </Link>
                         </div>
                     ) : (
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="glass-table-head">
-                                    <th className="px-4 py-3">#</th>
-                                    <th className="px-4 py-3">Nama Dokumen</th>
-                                    <th className="px-4 py-3">Kode</th>
-                                    <th className="px-4 py-3 text-center">Digunakan Item HPS</th>
-                                    <th className="px-4 py-3 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200/70">
-                                {jenisDokumens.map((item, idx) => (
-                                    <tr key={item.id} className="glass-table-row">
-                                        <td className="px-4 py-3 text-slate-500">{idx + 1}</td>
-                                        <td className="px-4 py-3 font-semibold text-slate-900">{item.nama}</td>
-                                        <td className="px-4 py-3 font-mono text-xs text-slate-600">{item.kode}</td>
-                                        <td className="px-4 py-3 text-center text-slate-700">{item.item_hps_count}</td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center justify-center gap-2">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="glass-table-head">
+                                        <th className="px-4 py-3">#</th>
+                                        <th className="px-4 py-3">Nama Dokumen</th>
+                                        <th className="px-4 py-3 text-center">Digunakan Item HPS</th>
+                                        <th className="px-4 py-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200/70">
+                                    {jenisDokumens.map((item, idx) => (
+                                        <tr key={item.id} className="glass-table-row">
+                                            <td className="px-4 py-3 text-slate-500">{idx + 1}</td>
+                                            <td className="px-4 py-3 font-semibold text-slate-900">{item.nama}</td>
+                                            <td className="px-4 py-3 text-center text-slate-700">{item.item_hps_count}</td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center justify-center gap-2">
                                                 <Link
                                                     href={`/jenis-dokumen/${item.id}/edit`}
                                                     className="text-slate-600 transition-colors hover:text-slate-900"

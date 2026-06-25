@@ -22,12 +22,13 @@ class SpjMakanMinumRapatController extends Controller
     public function index()
     {
         $data = SpjMakanMinumRapat::query()
-            ->with(['pic', 'penyedia', 'itemHps.jenisDokumens', 'spjDokumens'])
+            ->with(['pic', 'penyedia', 'spjItems.itemHps.jenisDokumens', 'spjDokumens'])
             ->latest()
             ->paginate(15);
 
         $data->getCollection()->transform(function (SpjMakanMinumRapat $spj) {
             $spj->setAttribute('dokumen_progress', $this->dokumenService->progressFor($spj));
+            $spj->setAttribute('total_harga', $spj->total_harga);
 
             return $spj;
         });
@@ -46,23 +47,37 @@ class SpjMakanMinumRapatController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $this->withTotalHarga($this->validateSpj($request));
+        $validated = $this->validateSpj($request);
 
         DB::transaction(function () use ($validated, $request) {
-            $order = $this->stockService->validateItemOrder(
-                $validated['item_hps_id'] ?? null,
-                $validated['jumlah_order'] ?? null,
-            );
+            $validatedItems = $this->stockService->validateItems($validated['items'] ?? []);
 
-            $spj = SpjMakanMinumRapat::create($validated);
-            $this->stockService->deduct($order['item'], $order['qty']);
+            $spjData = collect($validated)->except('items')->toArray();
+            $spjData['tracking_spj'] = 'Dokumen Tidak Lengkap';
+            $spjData['pembayaran_spj'] = false;
+            
+            $spj = SpjMakanMinumRapat::create($spjData);
 
-            $spj->load('pic', 'penyedia', 'itemHps');
+            foreach ($validatedItems as $vItem) {
+                $item = $vItem['item'];
+                $qty = $vItem['qty'];
+                $total_harga = round((float)$qty * (float)$item->harga_unit, 2);
+
+                $spj->spjItems()->create([
+                    'item_hps_id' => $item->id,
+                    'jumlah_order' => $qty,
+                    'total_harga' => $total_harga,
+                ]);
+
+                $this->stockService->deduct($item, $qty);
+            }
+
+            $spj->load('pic', 'penyedia', 'spjItems.itemHps');
 
             $recipients = \App\Models\User::query()
                 ->whereIn('role', [
-                    \App\Enums\UserRole::SuperAdmin,
-                    \App\Enums\UserRole::Bendahara,
+                    'super_admin',
+                    'bendahara',
                 ])
                 ->get();
 
@@ -81,9 +96,10 @@ class SpjMakanMinumRapatController extends Controller
         $spj->load([
             'pic',
             'penyedia',
-            'itemHps.jenisDokumens',
+            'spjItems.itemHps.jenisDokumens',
             'spjDokumens.jenisDokumen',
         ]);
+        $spj->setAttribute('total_harga', $spj->total_harga);
 
         return Inertia::render('spj/show', [
             'spj' => $spj,
@@ -96,7 +112,7 @@ class SpjMakanMinumRapatController extends Controller
         $spj->load([
             'pic',
             'penyedia',
-            'itemHps.jenisDokumens',
+            'spjItems.itemHps.jenisDokumens',
             'spjDokumens.jenisDokumen',
         ]);
 
@@ -111,22 +127,33 @@ class SpjMakanMinumRapatController extends Controller
 
     public function update(Request $request, SpjMakanMinumRapat $spj)
     {
-        $validated = $this->withTotalHarga($this->validateSpj($request));
+        $validated = $this->validateSpj($request);
 
         DB::transaction(function () use ($spj, $validated, $request) {
-            $order = $this->stockService->validateItemOrder(
-                $validated['item_hps_id'] ?? null,
-                $validated['jumlah_order'] ?? null,
-                $spj,
-            );
+            $validatedItems = $this->stockService->validateItems($validated['items'] ?? [], $spj);
 
-            $this->stockService->applyUpdate(
-                $spj,
-                $validated['item_hps_id'] ?? null,
-                $order['qty'],
-            );
+            $this->stockService->applyUpdate($spj, $validated['items'] ?? []);
 
-            $spj->update($validated);
+            // delete old items
+            $spj->spjItems()->delete();
+
+            // create new items
+            foreach ($validatedItems as $vItem) {
+                $item = $vItem['item'];
+                $qty = $vItem['qty'];
+                $total_harga = round((float)$qty * (float)$item->harga_unit, 2);
+
+                $spj->spjItems()->create([
+                    'item_hps_id' => $item->id,
+                    'jumlah_order' => $qty,
+                    'total_harga' => $total_harga,
+                ]);
+            }
+
+            $spjData = collect($validated)->except('items')->toArray();
+            $spjData['pembayaran_spj'] = ($spjData['tracking_spj'] ?? '') === 'Selesai';
+            
+            $spj->update($spjData);
             $this->dokumenService->syncUploads($spj, $request);
         });
 
@@ -138,7 +165,9 @@ class SpjMakanMinumRapatController extends Controller
     {
         DB::transaction(function () use ($spj) {
             $this->dokumenService->deleteAllForSpj($spj);
-            $this->stockService->restore($spj->item_hps_id, $spj->jumlah_order);
+            foreach ($spj->spjItems as $oldItem) {
+                $this->stockService->restore($oldItem->item_hps_id, $oldItem->jumlah_order);
+            }
             $spj->delete();
         });
 
@@ -158,8 +187,10 @@ class SpjMakanMinumRapatController extends Controller
             'pic_id' => 'nullable|exists:pics,id',
             'penyedia_id' => 'nullable|exists:penyedias,id',
             'kegiatan' => 'nullable|string|max:255',
-            'item_hps_id' => 'required|exists:item_hps,id',
-            'jumlah_order' => 'required|numeric|min:0.01',
+            'jenis_mamin' => 'required|string|in:snack dan makanan,kebutuhan dapur',
+            'items' => 'required|array|min:1',
+            'items.*.item_hps_id' => 'required|exists:item_hps,id',
+            'items.*.jumlah_order' => 'required|numeric|min:0.01',
             'pembayaran_spj' => 'boolean',
             'tracking_spj' => 'nullable|string|max:255',
             'kasubbag_kasi' => 'nullable|string|max:255',
@@ -170,20 +201,5 @@ class SpjMakanMinumRapatController extends Controller
             'dokumen_hapus' => 'nullable|array',
             'dokumen_hapus.*' => 'integer|exists:jenis_dokumens,id',
         ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $validated
-     * @return array<string, mixed>
-     */
-    private function withTotalHarga(array $validated): array
-    {
-        $item = ItemHps::query()->findOrFail($validated['item_hps_id']);
-        $validated['total_harga'] = round(
-            (float) $validated['jumlah_order'] * (float) $item->harga_unit,
-            2
-        );
-
-        return $validated;
     }
 }

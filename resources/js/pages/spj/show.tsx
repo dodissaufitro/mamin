@@ -3,7 +3,20 @@ import { calcTotalHarga, formatRupiah } from '@/lib/spj-format';
 import { type DokumenProgress, type JenisDokumenItem, type SpjDokumenItem, uploadedMap } from '@/lib/dokumen';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
+import { useMemo } from 'react';
 import { CheckCircle2, ExternalLink, FileText, Pencil, Trash2, XCircle } from 'lucide-react';
+
+interface SpjItemData {
+    id: number;
+    jumlah_order: number;
+    total_harga: string | number;
+    item_hps?: {
+        id: number;
+        nama_item: string;
+        harga_unit?: string | number;
+        jenis_dokumens: JenisDokumenItem[];
+    } | null;
+}
 
 interface SpjItem {
     id: number;
@@ -13,20 +26,15 @@ interface SpjItem {
     pic: { id: number; nama: string; jabatan: string | null } | null;
     kegiatan: string | null;
     penyedia: { id: number; nama: string; alamat: string | null; telepon: string | null } | null;
-    item_hps?: {
-        id: number;
-        nama_item: string;
-        harga_unit?: string | number;
-        jenis_dokumens: JenisDokumenItem[];
-    } | null;
+    spj_items?: SpjItemData[];
     spj_dokumens?: SpjDokumenItem[];
-    jumlah_order: number | null;
     total_harga: number | string | null;
     pembayaran_spj: boolean;
     kelengkapan_dokumen: boolean;
     kasubbag_kasi: string | null;
     staf: string | null;
     link_spj: string | null;
+    tracking_spj: string | null;
 }
 
 interface Props {
@@ -72,7 +80,18 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
         }
     }
 
-    const applicableDokumen = spj.item_hps?.jenis_dokumens ?? [];
+    const applicableDokumen = useMemo(() => {
+        const docsMap = new Map<number, JenisDokumenItem>();
+        spj.spj_items?.forEach(spjItem => {
+            if (spjItem.item_hps && spjItem.item_hps.jenis_dokumens) {
+                spjItem.item_hps.jenis_dokumens.forEach(doc => {
+                    docsMap.set(doc.id, doc);
+                });
+            }
+        });
+        return Array.from(docsMap.values());
+    }, [spj.spj_items]);
+
     const uploadsByJenis = uploadedMap(spj.spj_dokumens);
 
     return (
@@ -82,7 +101,6 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                 <div className="mb-6 flex items-start justify-between gap-4">
                     <div>
                         <h1 className="text-lg font-bold text-violet-800 dark:text-violet-200">{spj.kegiatan ?? 'Detail SPJ'}</h1>
-                        <p className="text-sm text-violet-500 dark:text-violet-400">#{spj.id} &middot; {spj.penyedia?.nama ?? '-'}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
                         <Link href={`/spj/${spj.id}/edit`} className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-100 dark:border-sky-700 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40 transition-colors shadow-sm">
@@ -94,46 +112,60 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-6">
                     <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
-                        <h2 className="mb-4 text-xs font-bold uppercase tracking-wide text-violet-600 dark:text-violet-400">Informasi Kegiatan</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
+                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tanggal</h2>
+                        <div className="grid gap-4 sm:grid-cols-3">
                             <InfoRow label="Tanggal Pemesanan" value={formatDate(spj.tanggal_pemesanan)} />
                             <InfoRow label="Tanggal Kegiatan" value={formatDate(spj.tanggal_kegiatan)} />
                             <InfoRow label="Deadline SPJ" value={formatDate(spj.deadline_spj)} />
-                            <InfoRow label="Item HPS" value={spj.item_hps?.nama_item ?? null} />
-                            <InfoRow label="Jumlah Order" value={spj.jumlah_order?.toLocaleString('id-ID')} />
-                            <InfoRow
-                                label="Total Harga"
-                                value={
-                                    spj.total_harga != null
-                                        ? formatRupiah(spj.total_harga)
-                                        : spj.jumlah_order && spj.item_hps?.harga_unit
-                                          ? formatRupiah(calcTotalHarga(spj.jumlah_order, spj.item_hps.harga_unit))
-                                          : null
-                                }
-                            />
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
+                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Info Kegiatan</h2>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <InfoRow label="Kegiatan" value={spj.kegiatan} />
                             <InfoRow label="Penyedia" value={spj.penyedia?.nama ?? null} />
                             <InfoRow label="PIC Penanggung Jawab" value={spj.pic ? `${spj.pic.nama}${spj.pic.jabatan ? ` (${spj.pic.jabatan})` : ''}` : null} />
                             <InfoRow label="Kasubbag / Kasi" value={spj.kasubbag_kasi} />
-                            <InfoRow label="Staf" value={spj.staf} />
-                        </div>
-                        {spj.link_spj && (
-                            <div className="mt-4 border-t border-violet-100 pt-4 dark:border-violet-800">
-                                <p className="mb-1 text-xs font-semibold text-violet-500 dark:text-violet-400">Link SPJ</p>
-                                <a href={spj.link_spj} target="_blank" rel="noopener noreferrer"
-                                   className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:underline dark:text-violet-400">
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                    {spj.link_spj}
-                                </a>
+                            
+                            <div className="sm:col-span-2 mt-2">
+                                <label className="mb-2 block text-sm font-semibold text-violet-700 dark:text-violet-300">Daftar Item HPS</label>
+                                {spj.spj_items?.map((spjItem, idx) => (
+                                    <div key={idx} className="mb-3 flex flex-col gap-4 rounded-xl border border-violet-100 bg-violet-50/50 p-4 dark:border-violet-800/50 dark:bg-violet-900/10 sm:flex-row sm:items-start">
+                                        <div className="flex-1">
+                                            <InfoRow label={`Item HPS ${idx + 1}`} value={spjItem.item_hps?.nama_item} />
+                                        </div>
+                                        <div className="w-full sm:w-32">
+                                            <InfoRow label="Jumlah" value={spjItem.jumlah_order?.toLocaleString('id-ID')} />
+                                        </div>
+                                        <div className="w-full sm:w-48">
+                                            <InfoRow label="Subtotal" value={
+                                                <span className="font-semibold text-violet-800 dark:text-violet-300">
+                                                    {formatRupiah(spjItem.total_harga || 0)}
+                                                </span>
+                                            } />
+                                        </div>
+                                    </div>
+                                ))}
+                                
+                                <div className="mt-4 flex justify-end">
+                                    <div className="rounded-lg bg-violet-600 px-6 py-3 text-white shadow-md">
+                                        <p className="text-xs text-violet-200 uppercase tracking-wide">Total Harga</p>
+                                        <p className="text-xl font-bold">
+                                            {formatRupiah(spj.total_harga || 0)}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
                         <div className="mb-4 flex items-center justify-between gap-3">
-                            <h2 className="text-xs font-bold uppercase tracking-wide text-violet-600 dark:text-violet-400">
-                                Dokumen ({spj.item_hps?.nama_item ?? '-'})
+                            <h2 className="text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                                Dokumen SPJ
                             </h2>
                             <span className="text-xs font-medium text-slate-600">
                                 {dokumenProgress.done}/{dokumenProgress.total} terupload
@@ -141,34 +173,34 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                         </div>
                         {applicableDokumen.length === 0 ? (
                             <p className="text-sm text-slate-500">
-                                Belum ada dokumen yang diaktifkan pada Item HPS ini.
+                                Belum ada dokumen yang diaktifkan pada item-item ini.
                             </p>
                         ) : (
                             <div className="flex flex-col gap-3">
                                 {applicableDokumen.map((jenis) => {
                                     const upload = uploadsByJenis.get(jenis.id);
                                     return (
-                                        <div key={jenis.id} className="flex items-center justify-between gap-3 rounded-lg border border-violet-100 px-3 py-2.5">
-                                            <div className="flex items-center gap-2">
+                                        <div key={jenis.id} className="flex items-center justify-between gap-3 rounded-lg border border-violet-100 px-4 py-3 bg-white shadow-sm hover:border-violet-300 transition-colors dark:bg-gray-800 dark:border-violet-800/50">
+                                            <div className="flex items-center gap-3">
                                                 {upload ? (
-                                                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                                                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                                                 ) : (
-                                                    <XCircle className="h-4 w-4 text-slate-300" />
+                                                    <XCircle className="h-5 w-5 text-slate-300" />
                                                 )}
-                                                <span className="text-sm font-medium text-slate-800">{jenis.nama}</span>
+                                                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{jenis.nama}</span>
                                             </div>
                                             {upload ? (
                                                 <a
                                                     href={upload.url ?? '#'}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1 text-xs font-medium text-violet-600 hover:underline"
+                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-800 hover:underline bg-violet-50 px-3 py-1.5 rounded-md transition-colors"
                                                 >
-                                                    <FileText className="h-3.5 w-3.5" />
-                                                    {upload.original_filename}
+                                                    <FileText className="h-4 w-4" />
+                                                    Lihat Dokumen
                                                 </a>
                                             ) : (
-                                                <span className="text-xs text-slate-400">Belum diupload</span>
+                                                <span className="text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100">Belum ada file</span>
                                             )}
                                         </div>
                                     );
@@ -178,16 +210,31 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                     </div>
 
                     <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
-                        <h2 className="mb-4 text-xs font-bold uppercase tracking-wide text-violet-600 dark:text-violet-400">Status SPJ</h2>
-                        <div className="grid grid-cols-2 gap-2">
-                            <BoolBadge value={spj.kelengkapan_dokumen} label="Kelengkapan Dokumen" />
-                            <BoolBadge value={spj.pembayaran_spj} label="Pembayaran SPJ" />
+                        <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking & Status SPJ</h2>
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <InfoRow label="Tracking Saat Ini" value={
+                                    <span className="inline-flex mt-1 items-center rounded-md bg-blue-50 px-2.5 py-1.5 text-sm font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-900/50">
+                                        {spj.tracking_spj || 'Belum ada tracking spesifik'}
+                                    </span>
+                                } />
+                            </div>
+                            <div className="grid grid-cols-1 gap-2">
+                                <InfoRow label="Dokumen" value={
+                                    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold mt-1 ${dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-700/10' : 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-700/10'}`}>
+                                        {dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'Dokumen Lengkap' : 'Menunggu Kelengkapan'}
+                                    </span>
+                                } />
+                                <BoolBadge value={spj.pembayaran_spj} label="Pembayaran SPJ" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-5">
-                    <Link href="/spj" className="text-sm font-semibold text-violet-600 hover:underline dark:text-violet-400">← Kembali ke daftar</Link>
+                <div className="mt-6 flex justify-end">
+                    <Link href="/spj" className="rounded-lg border border-violet-300 px-5 py-2.5 text-sm font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300 dark:hover:bg-violet-900/20 shadow-sm transition-colors">
+                        Kembali ke daftar
+                    </Link>
                 </div>
             </div>
         </AppLayout>

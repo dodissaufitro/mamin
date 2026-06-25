@@ -2,28 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::query()
+        $users = User::with('roles')
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'role', 'created_at']);
+            ->get(['id', 'name', 'email', 'created_at']);
 
         return Inertia::render('users/index', [
             'users' => $users->map(fn (User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role instanceof UserRole ? $user->role->value : $user->role,
-                'role_label' => $user->role instanceof UserRole ? $user->role->label() : $user->role,
+                'role' => $user->roles->pluck('name')->first(),
+                'role_label' => str($user->roles->pluck('name')->first())->title()->replace('_', ' '),
                 'created_at' => $user->created_at,
             ]),
         ]);
@@ -42,10 +41,16 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Password::defaults()],
-            'role' => ['required', Rule::in(UserRole::values())],
+            'role' => ['required', 'string', 'exists:roles,name'],
         ]);
 
-        User::create($validated);
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ]);
+
+        $user->assignRole($validated['role']);
 
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan');
     }
@@ -57,7 +62,7 @@ class UserController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role instanceof UserRole ? $user->role->value : $user->role,
+                'role' => $user->roles->pluck('name')->first(),
             ],
             'roles' => $this->roleOptions(),
         ]);
@@ -69,17 +74,16 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,'.$user->id,
             'password' => ['nullable', 'confirmed', Password::defaults()],
-            'role' => ['required', Rule::in(UserRole::values())],
+            'role' => ['required', 'string', 'exists:roles,name'],
         ]);
 
-        if ($user->id === auth()->id() && $validated['role'] !== UserRole::SuperAdmin->value) {
-            return back()->withErrors(['role' => 'Anda tidak dapat mengubah role akun sendiri.']);
+        if ($user->id === auth()->id() && $validated['role'] !== 'super_admin' && $user->hasRole('super_admin')) {
+            return back()->withErrors(['role' => 'Anda tidak dapat mengubah role akun Anda sendiri jika Anda adalah super admin.']);
         }
 
         $payload = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'role' => $validated['role'],
         ];
 
         if (! empty($validated['password'])) {
@@ -87,6 +91,7 @@ class UserController extends Controller
         }
 
         $user->update($payload);
+        $user->syncRoles([$validated['role']]);
 
         return redirect()->route('users.index')->with('success', 'User berhasil diupdate');
     }
@@ -102,14 +107,13 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus');
     }
 
-    /**
-     * @return list<array{value: string, label: string}>
-     */
     private function roleOptions(): array
     {
-        return array_map(
-            fn (UserRole $role) => ['value' => $role->value, 'label' => $role->label()],
-            UserRole::cases(),
-        );
+        return Role::all()->map(function ($role) {
+            return [
+                'value' => $role->name,
+                'label' => str($role->name)->title()->replace('_', ' ')->toString()
+            ];
+        })->toArray();
     }
 }

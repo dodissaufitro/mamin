@@ -29,16 +29,17 @@ class NewSpjSubmitted extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        $this->spj->loadMissing('pic', 'penyedia', 'itemHps');
+        $this->spj->loadMissing('pic', 'penyedia', 'spjItems.itemHps');
 
         $kegiatan = $this->spj->kegiatan ?: 'Tanpa nama kegiatan';
         $submitter = $this->submittedBy?->name ?? 'PIC';
+        $item_hps_names = $this->spj->spjItems->map(fn($i) => $i->itemHps?->nama_item)->filter()->implode(', ');
 
         return [
             'type' => 'new_spj',
             'spj_id' => $this->spj->id,
             'kegiatan' => $kegiatan,
-            'item_hps' => $this->spj->itemHps?->nama_item,
+            'item_hps' => $item_hps_names,
             'pic' => $this->spj->pic?->nama,
             'penyedia' => $this->spj->penyedia?->nama,
             'submitted_by' => $submitter,

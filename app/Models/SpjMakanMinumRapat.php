@@ -18,9 +18,7 @@ class SpjMakanMinumRapat extends Model
         'pic_id',
         'penyedia_id',
         'kegiatan',
-        'item_hps_id',
-        'jumlah_order',
-        'total_harga',
+        'jenis_mamin',
         'pembayaran_spj',
         'tracking_spj',
         'kasubbag_kasi',
@@ -30,12 +28,11 @@ class SpjMakanMinumRapat extends Model
     ];
 
     protected $casts = [
-        'tanggal_pemesanan' => 'date',
-        'tanggal_kegiatan' => 'date',
-        'deadline_spj' => 'date',
+        'tanggal_pemesanan' => 'date:Y-m-d',
+        'tanggal_kegiatan' => 'date:Y-m-d',
+        'deadline_spj' => 'date:Y-m-d',
         'pembayaran_spj' => 'boolean',
         'kelengkapan_dokumen' => 'boolean',
-        'total_harga' => 'decimal:2',
     ];
 
     public function pic(): BelongsTo
@@ -48,13 +45,18 @@ class SpjMakanMinumRapat extends Model
         return $this->belongsTo(Penyedia::class, 'penyedia_id');
     }
 
-    public function itemHps(): BelongsTo
+    public function spjItems(): HasMany
     {
-        return $this->belongsTo(ItemHps::class, 'item_hps_id');
+        return $this->hasMany(SpjItem::class, 'spj_makan_minum_rapat_id');
     }
 
     public function spjDokumens(): HasMany
     {
         return $this->hasMany(SpjDokumen::class);
+    }
+
+    public function getTotalHargaAttribute()
+    {
+        return $this->spjItems->sum('total_harga');
     }
 }

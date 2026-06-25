@@ -225,14 +225,14 @@ export function ItemAnggaranChart({ data }: Props) {
                                 verticalAlign="bottom"
                                 align="center"
                                 content={() => (
-                                    <div className="flex justify-center items-center gap-6 pt-9">
+                                    <div className="flex justify-center items-center gap-6 pt-9" style={{ transform: 'translateX(22px)' }}>
                                         <div className="flex items-center gap-2">
                                             <div className="w-3 h-3" style={{ backgroundColor: COLOR_TOTAL }}></div>
-                                            <span className="text-sm text-slate-600 font-medium">Total Item HPS</span>
+                                            <span className="text-sm text-slate-600 font-medium">Total Anggaran</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-3 h-3" style={{ backgroundColor: COLOR_DIGUNAKAN }}></div>
-                                            <span className="text-sm text-slate-600 font-medium">Sudah Digunakan</span>
+                                            <span className="text-sm text-slate-600 font-medium">Alokasi</span>
                                         </div>
                                     </div>
                                 )}

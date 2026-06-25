@@ -39,17 +39,6 @@ export default function JenisDokumenCreate() {
                         />
                         {errors.nama && <p className="text-xs text-red-500">{errors.nama}</p>}
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <label className={`text-sm font-semibold ${glassLabelClass}`}>Kode</label>
-                        <input
-                            type="text"
-                            className={glassInputClass}
-                            value={data.kode}
-                            onChange={(e) => setData('kode', e.target.value)}
-                            placeholder="Opsional, otomatis dari nama"
-                        />
-                        {errors.kode && <p className="text-xs text-red-500">{errors.kode}</p>}
-                    </div>
                     <div className="flex justify-end gap-3 pt-2">
                         <a href="/jenis-dokumen" className={glassBtnSecondaryClass}>
                             Batal

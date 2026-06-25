@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -15,7 +14,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'password' => bcrypt('password'),
-                'role' => UserRole::SuperAdmin,
+                'role' => 'super_admin',
             ]
         );
 
@@ -24,7 +23,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'PIC User',
                 'password' => bcrypt('password'),
-                'role' => UserRole::Pic,
+                'role' => 'pic',
             ]
         );
 
@@ -33,12 +32,21 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Bendahara User',
                 'password' => bcrypt('password'),
-                'role' => UserRole::Bendahara,
+                'role' => 'bendahara',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('password'),
+                'role' => 'admin',
             ]
         );
 
         $this->call([
-            CurrentStateSeeder::class,
+            RolePermissionSeeder::class,
         ]);
     }
 }

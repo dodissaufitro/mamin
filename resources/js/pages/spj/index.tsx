@@ -9,20 +9,26 @@ import { AlertTriangle, CheckCircle2, Clock, Eye, Pencil, Plus, Trash2, XCircle 
 
 import { type DokumenProgress } from '@/lib/dokumen';
 
+interface SpjItemData {
+    id: number;
+    jumlah_order: number;
+    total_harga: number | string;
+    item_hps?: {
+        id: number;
+        nama_item: string;
+        harga_unit?: string | number;
+    } | null;
+}
+
 interface SpjItem {
     id: number;
     tanggal_kegiatan: string | null;
     deadline_spj: string | null;
     pic: { id: number; nama: string; jabatan: string | null } | null;
     penyedia: { id: number; nama: string } | null;
-    item_hps?: {
-        id: number;
-        nama_item: string;
-        harga_unit?: string | number;
-    } | null;
+    spj_items?: SpjItemData[];
     dokumen_progress?: DokumenProgress;
     kegiatan: string | null;
-    jumlah_order: number | null;
     total_harga: number | string | null;
     pembayaran_spj: boolean;
     tracking_spj: string | null;
@@ -63,7 +69,7 @@ function StatusBadge({ item }: { item: SpjItem }) {
     let colorClass = "border-sky-300 bg-sky-100 text-sky-800";
     if (item.tracking_spj === 'Selesai') {
         colorClass = "border-emerald-300 bg-emerald-100 text-emerald-800";
-    } else if (item.tracking_spj === 'Dokumen Tidak Lengkap') {
+    } else if (item.tracking_spj === 'Dokumen Tidak Lengkap' || item.tracking_spj === 'Menunggu Kelengkapan') {
         colorClass = "border-red-300 bg-red-100 text-red-800";
     }
     
@@ -124,13 +130,18 @@ export default function SpjIndex({ data }: Props) {
                                         <th className="px-4 py-3">Penyedia</th>
                                         <th className="px-4 py-3">PIC</th>
                                         <th className="px-4 py-3 text-center">Dokumen</th>
-                                        <th className="px-4 py-3 text-center">Status</th>
+                                        <th className="px-4 py-3 text-center">Tracking SPJ</th>
                                         <th className="px-4 py-3 text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200/70">
                                     {data.data.map((item, idx) => {
                                         const rowNum = (data.current_page - 1) * data.per_page + idx + 1;
+                                        
+                                        const totalDok = item.dokumen_progress?.total ?? 0;
+                                        const doneDok = item.dokumen_progress?.done ?? 0;
+                                        const isLengkap = totalDok > 0 && doneDok === totalDok;
+                                        
                                         return (
                                             <tr key={item.id} className="glass-table-row">
                                                 <td className="px-4 py-3 text-slate-500">{rowNum}</td>
@@ -138,16 +149,12 @@ export default function SpjIndex({ data }: Props) {
                                                     <p className="truncate font-semibold text-slate-900">{item.kegiatan ?? '-'}</p>
                                                 </td>
                                                 <td className="px-4 py-3 max-w-[140px]">
-                                                    <p className="truncate text-slate-700">{item.item_hps?.nama_item ?? '-'}</p>
+                                                    <p className="truncate text-slate-700" title={item.spj_items?.map(i => i.item_hps?.nama_item).filter(Boolean).join(', ')}>
+                                                        {item.spj_items?.map(i => i.item_hps?.nama_item).filter(Boolean).join(', ') || '-'}
+                                                    </p>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-right font-medium text-slate-800">
-                                                    {item.total_harga != null
-                                                        ? formatRupiah(item.total_harga)
-                                                        : item.jumlah_order && item.item_hps?.harga_unit
-                                                          ? formatRupiah(
-                                                                calcTotalHarga(item.jumlah_order, item.item_hps.harga_unit),
-                                                            )
-                                                          : '-'}
+                                                    {formatRupiah(item.total_harga || 0)}
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-slate-700">{formatDate(item.tanggal_kegiatan)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-slate-700">{formatDate(item.deadline_spj)}</td>
@@ -158,7 +165,12 @@ export default function SpjIndex({ data }: Props) {
                                                     <p className="truncate text-slate-700">{item.pic?.nama ?? '-'}</p>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <DokumenProgressBar progress={item.dokumen_progress} />
+                                                    <div className="flex flex-col items-center gap-1.5">
+                                                        <DokumenProgressBar progress={item.dokumen_progress} />
+                                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isLengkap ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                            {isLengkap ? 'Dokumen Lengkap' : 'Menunggu Kelengkapan'}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td className="px-4 py-3 text-center"><StatusBadge item={item} /></td>
                                                 <td className="px-4 py-3">
