@@ -10,14 +10,14 @@ export function DokumenProgressBar({ progress }: { progress: DokumenProgress | n
     }
 
     return (
-        <div className="flex min-w-[80px] flex-col items-center gap-1">
-            <div className="h-2 w-full rounded-full bg-slate-200">
+        <div className="flex w-20 flex-col items-center gap-1">
+            <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
                 <div
-                    className={`h-1.5 rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-orange-400' : 'bg-rose-500'}`}
+                    className={`h-full rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-orange-400' : 'bg-rose-500'}`}
                     style={{ width: `${pct}%` }}
                 />
             </div>
-            <span className="text-xs font-medium text-slate-600">
+            <span className="text-xs font-medium text-slate-500">
                 {done}/{total}
             </span>
         </div>

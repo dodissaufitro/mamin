@@ -146,6 +146,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                         pic_id: newJenis === 'kebutuhan dapur' ? '' : prev.pic_id,
                                     }));
                                 }}>
+                                    <option value="snack">Snack</option>
                                     <option value="snack dan makanan">Snack dan Makanan</option>
                                     <option value="kebutuhan dapur">Kebutuhan Dapur</option>
                                 </select>
@@ -260,7 +261,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                                 </InputField>
                                             </div>
                                             
-                                            {data.jenis_mamin === 'kebutuhan dapur' && data.items.length > 1 && (
+                                            {data.items.length > 1 && (
                                                 <div className="pt-6">
                                                     <button type="button" onClick={() => {
                                                         const newItems = data.items.filter((_, i) => i !== idx);
@@ -274,17 +275,15 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                     );
                                 })}
                                 
-                                {data.jenis_mamin === 'kebutuhan dapur' && (
-                                    <div className="mt-2 flex justify-start">
-                                        <button
-                                            type="button"
-                                            onClick={() => setData('items', [...data.items, { item_hps_id: '', jumlah_order: '' }])}
-                                            className="flex items-center gap-2 rounded-lg border border-violet-300 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300 dark:hover:bg-violet-900/20"
-                                        >
-                                            <Plus className="h-4 w-4" /> Tambah Item
-                                        </button>
-                                    </div>
-                                )}
+                                <div className="mt-2 flex justify-start">
+                                    <button
+                                        type="button"
+                                        onClick={() => setData('items', [...data.items, { item_hps_id: '', jumlah_order: '' }])}
+                                        className="flex items-center gap-2 rounded-lg border border-violet-300 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300 dark:hover:bg-violet-900/20"
+                                    >
+                                        <Plus className="h-4 w-4" /> Tambah Item
+                                    </button>
+                                </div>
                                 
                                 <div className="mt-4 flex justify-end">
                                     <div className="rounded-lg bg-violet-600 px-6 py-3 text-white shadow-md">

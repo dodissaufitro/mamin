@@ -53,7 +53,7 @@ class SpjMakanMinumRapatController extends Controller
             $validatedItems = $this->stockService->validateItems($validated['items'] ?? []);
 
             $spjData = collect($validated)->except('items')->toArray();
-            $spjData['tracking_spj'] = 'Dokumen Tidak Lengkap';
+            $spjData['tracking_spj'] = 'SSPD & SPOD';
             $spjData['pembayaran_spj'] = false;
             
             $spj = SpjMakanMinumRapat::create($spjData);
@@ -187,7 +187,7 @@ class SpjMakanMinumRapatController extends Controller
             'pic_id' => 'nullable|exists:pics,id',
             'penyedia_id' => 'nullable|exists:penyedias,id',
             'kegiatan' => 'nullable|string|max:255',
-            'jenis_mamin' => 'required|string|in:snack dan makanan,kebutuhan dapur',
+            'jenis_mamin' => 'required|string|in:snack,snack dan makanan,kebutuhan dapur',
             'items' => 'required|array|min:1',
             'items.*.item_hps_id' => 'required|exists:item_hps,id',
             'items.*.jumlah_order' => 'required|numeric|min:0.01',

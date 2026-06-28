@@ -214,15 +214,15 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div>
                                 <InfoRow label="Tracking Saat Ini" value={
-                                    <span className="inline-flex mt-1 items-center rounded-md bg-blue-50 px-2.5 py-1.5 text-sm font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-900/50">
-                                        {spj.tracking_spj || 'Belum ada tracking spesifik'}
+                                    <span className="inline-flex mt-1 items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-900/50">
+                                        {(spj.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : spj.tracking_spj) || 'Belum ada tracking spesifik'}
                                     </span>
                                 } />
                             </div>
                             <div className="grid grid-cols-1 gap-2">
-                                <InfoRow label="Dokumen" value={
-                                    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold mt-1 ${dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-700/10' : 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-700/10'}`}>
-                                        {dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'Dokumen Lengkap' : 'Menunggu Kelengkapan'}
+                                <InfoRow label="Kelengkapan Dokumen" value={
+                                    <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold mt-1 ${dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-600 border border-red-200'}`}>
+                                        {dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'Lengkap' : 'Tidak Lengkap'}
                                     </span>
                                 } />
                                 <BoolBadge value={spj.pembayaran_spj} label="Pembayaran SPJ" />

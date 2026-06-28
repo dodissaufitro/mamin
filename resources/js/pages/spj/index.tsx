@@ -66,16 +66,18 @@ function StatusBadge({ item }: { item: SpjItem }) {
         return <span className="text-xs text-slate-500">-</span>;
     }
     
-    let colorClass = "border-sky-300 bg-sky-100 text-sky-800";
-    if (item.tracking_spj === 'Selesai') {
-        colorClass = "border-emerald-300 bg-emerald-100 text-emerald-800";
-    } else if (item.tracking_spj === 'Dokumen Tidak Lengkap' || item.tracking_spj === 'Menunggu Kelengkapan') {
-        colorClass = "border-red-300 bg-red-100 text-red-800";
+    const displayTracking = item.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : item.tracking_spj;
+    
+    let colorClass = "border-sky-200 bg-sky-100 text-sky-700";
+    if (displayTracking === 'Selesai') {
+        colorClass = "border-emerald-200 bg-emerald-100 text-emerald-700";
+    } else if (displayTracking === 'Dokumen Tidak Lengkap' || displayTracking === 'Menunggu Kelengkapan' || displayTracking === 'Tidak Lengkap' || displayTracking === 'SSPD & SPOD') {
+        colorClass = "border-red-200 bg-red-100 text-red-600";
     }
     
     return (
-        <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${colorClass}`}>
-            {item.tracking_spj}
+        <span className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold leading-tight text-center min-w-[85px] max-w-[110px] whitespace-normal shadow-sm ${colorClass}`}>
+            {displayTracking}
         </span>
     );
 }
@@ -120,18 +122,19 @@ export default function SpjIndex({ data }: Props) {
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="glass-table-head">
-                                        <th className="px-4 py-3">#</th>
-                                        <th className="px-4 py-3">Kegiatan</th>
-                                        <th className="px-4 py-3">Item HPS</th>
-                                        <th className="px-4 py-3 text-right">Total Harga</th>
-                                        <th className="px-4 py-3">Tgl Kegiatan</th>
-                                        <th className="px-4 py-3">Deadline SPJ</th>
-                                        <th className="px-4 py-3">Penyedia</th>
-                                        <th className="px-4 py-3">PIC</th>
-                                        <th className="px-4 py-3 text-center">Dokumen</th>
-                                        <th className="px-4 py-3 text-center">Tracking SPJ</th>
-                                        <th className="px-4 py-3 text-center">Aksi</th>
+                                    <tr className="glass-table-head text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                        <th className="px-4 py-3 text-center">#</th>
+                                        <th className="px-4 py-3 text-left">KEGIATAN</th>
+                                        <th className="px-4 py-3 text-left">ITEM HPS</th>
+                                        <th className="px-4 py-3 text-right">TOTAL HARGA</th>
+                                        <th className="px-4 py-3 text-left">TGL KEGIATAN</th>
+                                        <th className="px-4 py-3 text-left">DEADLINE SPJ</th>
+                                        <th className="px-4 py-3 text-left">PENYEDIA</th>
+                                        <th className="px-4 py-3 text-left">PIC</th>
+                                        <th className="px-4 py-3 text-center">DOKUMEN</th>
+                                        <th className="px-4 py-3 text-center">KELENGKAPAN DOKUMEN</th>
+                                        <th className="px-4 py-3 text-center">TRACKING SPJ</th>
+                                        <th className="px-4 py-3 text-center">AKSI</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200/70">
@@ -144,7 +147,7 @@ export default function SpjIndex({ data }: Props) {
                                         
                                         return (
                                             <tr key={item.id} className="glass-table-row">
-                                                <td className="px-4 py-3 text-slate-500">{rowNum}</td>
+                                                <td className="px-4 py-3 text-center font-medium text-slate-500">{rowNum}</td>
                                                 <td className="px-4 py-3 max-w-[200px]">
                                                     <p className="truncate font-semibold text-slate-900">{item.kegiatan ?? '-'}</p>
                                                 </td>
@@ -164,13 +167,15 @@ export default function SpjIndex({ data }: Props) {
                                                 <td className="px-4 py-3 max-w-[120px]">
                                                     <p className="truncate text-slate-700">{item.pic?.nama ?? '-'}</p>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col items-center gap-1.5">
+                                                <td className="px-4 py-3 text-center">
+                                                    <div className="flex justify-center">
                                                         <DokumenProgressBar progress={item.dokumen_progress} />
-                                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isLengkap ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                                                            {isLengkap ? 'Dokumen Lengkap' : 'Menunggu Kelengkapan'}
-                                                        </span>
                                                     </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold leading-tight text-center min-w-[90px] shadow-sm ${isLengkap ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-red-200 bg-red-100 text-red-600'}`}>
+                                                        {isLengkap ? 'Lengkap' : 'Tidak Lengkap'}
+                                                    </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-center"><StatusBadge item={item} /></td>
                                                 <td className="px-4 py-3">
