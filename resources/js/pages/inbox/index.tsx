@@ -63,7 +63,7 @@ export default function InboxIndex({ notifications, unreadCount }: Props) {
             <div className="flex flex-col gap-4 p-4 md:p-6">
                 <AppPageHeader
                     title="Inbox / Notifikasi"
-                    description="Notifikasi SPJ Makan Minum Rapat yang baru masuk."
+                    description="Notifikasi SPJ Makan Minum yang baru masuk."
                     action={
                         unreadCount > 0 ? (
                             <button

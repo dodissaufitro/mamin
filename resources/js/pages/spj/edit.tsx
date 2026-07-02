@@ -57,7 +57,7 @@ function formatQty(value: number) {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'SPJ Makan Minum Rapat', href: '/spj' },
+    { title: 'SPJ Makan Minum', href: '/spj' },
     { title: 'Edit SPJ', href: '#' },
 ];
 
@@ -208,7 +208,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Edit SPJ" />
             <div className="mx-auto max-w-3xl p-4 md:p-6">
-                <h1 className="mb-6 text-lg font-bold text-violet-800 dark:text-violet-200">Edit SPJ Makan Minum Rapat</h1>
+                <h1 className="mb-6 text-lg font-bold text-violet-800 dark:text-violet-200">Edit SPJ Makan Minum</h1>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                     <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">

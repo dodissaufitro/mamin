@@ -15,7 +15,7 @@ export function getNavItems(auth: SharedData['auth']): NavItem[] {
 
     if (permissions['spj.view']) {
         items.push({
-            title: 'SPJ Makan Minum Rapat',
+            title: 'SPJ Makan Minum',
             url: '/spj',
             icon: ClipboardList,
         });

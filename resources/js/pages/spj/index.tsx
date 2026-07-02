@@ -53,7 +53,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'SPJ Makan Minum Rapat', href: '/spj' },
+    { title: 'SPJ Makan Minum', href: '/spj' },
 ];
 
 function formatDate(dateStr: string | null) {
@@ -65,16 +65,16 @@ function StatusBadge({ item }: { item: SpjItem }) {
     if (!item.tracking_spj) {
         return <span className="text-xs text-slate-500">-</span>;
     }
-    
+
     const displayTracking = item.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : item.tracking_spj;
-    
+
     let colorClass = "border-sky-200 bg-sky-100 text-sky-700";
     if (displayTracking === 'Selesai') {
         colorClass = "border-emerald-200 bg-emerald-100 text-emerald-700";
     } else if (displayTracking === 'Dokumen Tidak Lengkap' || displayTracking === 'Menunggu Kelengkapan' || displayTracking === 'Tidak Lengkap' || displayTracking === 'SSPD & SPOD') {
         colorClass = "border-red-200 bg-red-100 text-red-600";
     }
-    
+
     return (
         <span className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold leading-tight text-center min-w-[85px] max-w-[110px] whitespace-normal shadow-sm ${colorClass}`}>
             {displayTracking}
@@ -94,10 +94,10 @@ export default function SpjIndex({ data }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="SPJ Makan Minum Rapat" />
+            <Head title="SPJ Makan Minum" />
             <div className="flex flex-col gap-4 p-4 md:p-6">
                 <AppPageHeader
-                    title="SPJ Makan Minum Rapat"
+                    title="SPJ Makan Minum"
                     description="Kelola data SPJ makan dan minum rapat"
                     action={
                         permissions['spj.create'] ? (
@@ -119,10 +119,10 @@ export default function SpjIndex({ data }: Props) {
                             )}
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="max-h-[60vh] overflow-auto">
                             <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="glass-table-head text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                <thead className="sticky top-0 z-10 bg-white/95 shadow-sm backdrop-blur dark:bg-slate-900/95">
+                                    <tr className="glass-table-head text-xs font-bold tracking-wider text-slate-500 uppercase">
                                         <th className="px-4 py-3 text-center">#</th>
                                         <th className="px-4 py-3 text-left">KEGIATAN</th>
                                         <th className="px-4 py-3 text-left">ITEM HPS</th>
@@ -140,11 +140,11 @@ export default function SpjIndex({ data }: Props) {
                                 <tbody className="divide-y divide-slate-200/70">
                                     {data.data.map((item, idx) => {
                                         const rowNum = (data.current_page - 1) * data.per_page + idx + 1;
-                                        
+
                                         const totalDok = item.dokumen_progress?.total ?? 0;
                                         const doneDok = item.dokumen_progress?.done ?? 0;
                                         const isLengkap = totalDok > 0 && doneDok === totalDok;
-                                        
+
                                         return (
                                             <tr key={item.id} className="glass-table-row">
                                                 <td className="px-4 py-3 text-center font-medium text-slate-500">{rowNum}</td>
@@ -214,13 +214,12 @@ export default function SpjIndex({ data }: Props) {
                                     <Link
                                         key={i}
                                         href={link.url ?? '#'}
-                                        className={`rounded px-3 py-1 text-xs ${
-                                            link.active
+                                        className={`rounded px-3 py-1 text-xs ${link.active
                                                 ? 'rounded-lg bg-slate-900 text-white shadow-sm'
                                                 : link.url
-                                                ? 'rounded-lg text-sky-700 hover:bg-sky-100'
-                                                : 'pointer-events-none text-slate-300'
-                                        }`}
+                                                    ? 'rounded-lg text-sky-700 hover:bg-sky-100'
+                                                    : 'pointer-events-none text-slate-300'
+                                            }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 ))}

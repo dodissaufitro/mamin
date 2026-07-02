@@ -27,7 +27,7 @@ interface Props {
 
 const PERMISSION_GROUPS = [
     { label: 'Dashboard', key: 'dashboard', cruds: ['view'], icon: LayoutDashboard, desc: 'Akses halaman utama dan statistik ringkasan' },
-    { label: 'SPJ Makan Minum Rapat', key: 'spj', cruds: ['view', 'create', 'update', 'delete'], icon: FileCheck2, desc: 'Pengelolaan data Surat Pertanggungjawaban' },
+    { label: 'SPJ Makan Minum', key: 'spj', cruds: ['view', 'create', 'update', 'delete'], icon: FileCheck2, desc: 'Pengelolaan data Surat Pertanggungjawaban' },
     { label: 'Data PIC', key: 'pic', cruds: ['view', 'create', 'update', 'delete'], icon: Users, desc: 'Manajemen person in charge (Penanggung Jawab)' },
     { label: 'Data Penyedia', key: 'penyedia', cruds: ['view', 'create', 'update', 'delete'], icon: Store, desc: 'Manajemen mitra/vendor penyedia jasa' },
     { label: 'Item HPS', key: 'item_hps', cruds: ['view', 'create', 'update', 'delete'], icon: Package, desc: 'Kelola master Harga Perkiraan Sendiri (HPS)' },

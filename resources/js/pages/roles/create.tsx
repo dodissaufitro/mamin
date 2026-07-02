@@ -26,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const PERMISSION_GROUPS = [
     { label: 'Dashboard', key: 'dashboard', cruds: ['view'], icon: LayoutDashboard, desc: 'Akses ke halaman utama dan statistik' },
-    { label: 'SPJ Makan Minum Rapat', key: 'spj', cruds: ['view', 'create', 'update', 'delete'], icon: FileText, desc: 'Kelola data Surat Pertanggungjawaban' },
+    { label: 'SPJ Makan Minum', key: 'spj', cruds: ['view', 'create', 'update', 'delete'], icon: FileText, desc: 'Kelola data Surat Pertanggungjawaban' },
     { label: 'Data PIC', key: 'pic', cruds: ['view', 'create', 'update', 'delete'], icon: Users, desc: 'Kelola data Person in Charge' },
     { label: 'Data Penyedia', key: 'penyedia', cruds: ['view', 'create', 'update', 'delete'], icon: Store, desc: 'Kelola data Penyedia/Vendor' },
     { label: 'Item HPS', key: 'item_hps', cruds: ['view', 'create', 'update', 'delete'], icon: Package, desc: 'Kelola data Item Harga Perkiraan Sendiri' },

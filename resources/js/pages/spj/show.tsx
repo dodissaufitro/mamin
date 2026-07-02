@@ -44,7 +44,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'SPJ Makan Minum Rapat', href: '/spj' },
+    { title: 'SPJ Makan Minum', href: '/spj' },
     { title: 'Detail SPJ', href: '#' },
 ];
 
@@ -53,16 +53,6 @@ function formatDate(dateStr: string | null) {
     return new Date(dateStr).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function BoolBadge({ value, label }: { value: boolean; label: string }) {
-    return (
-        <div className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 shadow-sm ${value ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-800/40' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/30'}`}>
-            {value
-                ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                : <XCircle className="h-4 w-4 text-gray-300 dark:text-gray-600 shrink-0" />}
-            <span className={`text-sm font-medium ${value ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-400 dark:text-gray-500'}`}>{label}</span>
-        </div>
-    );
-}
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     return (
@@ -213,19 +203,18 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                         <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking & Status SPJ</h2>
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div>
-                                <InfoRow label="Tracking Saat Ini" value={
-                                    <span className="inline-flex mt-1 items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-900/50">
-                                        {(spj.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : spj.tracking_spj) || 'Belum ada tracking spesifik'}
-                                    </span>
-                                } />
-                            </div>
-                            <div className="grid grid-cols-1 gap-2">
                                 <InfoRow label="Kelengkapan Dokumen" value={
                                     <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold mt-1 ${dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-600 border border-red-200'}`}>
                                         {dokumenProgress.total > 0 && dokumenProgress.done === dokumenProgress.total ? 'Lengkap' : 'Tidak Lengkap'}
                                     </span>
                                 } />
-                                <BoolBadge value={spj.pembayaran_spj} label="Pembayaran SPJ" />
+                            </div>
+                            <div>
+                                <InfoRow label="Tracking Saat Ini" value={
+                                    <span className="inline-flex mt-1 items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-900/50">
+                                        {(spj.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : spj.tracking_spj) || 'Belum ada tracking spesifik'}
+                                    </span>
+                                } />
                             </div>
                         </div>
                     </div>

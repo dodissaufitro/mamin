@@ -167,7 +167,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware('permission:penyedia.view')->group(function () {
-        Route::resource('penyedia', PenyediaController::class)->except('show');
+        Route::resource('penyedia', PenyediaController::class)->except('show')->parameters([
+            'penyedia' => 'penyedia'
+        ]);
     });
 
     Route::middleware('permission:item_hps.view')->group(function () {

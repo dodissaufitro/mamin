@@ -177,7 +177,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
     const [searchQuery, setSearchQuery] = useState('');
     const selectedItem = itemsArray.find((i) => i.id === selectedId) || itemsArray[0];
 
-    const filteredItems = itemsArray.filter(item => 
+    const filteredItems = itemsArray.filter(item =>
         item.nama_item.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -187,9 +187,9 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex flex-col gap-6 p-4 md:p-6">
-                
+
                 {/* 1. Header */}
-                <AppPageHeader title="Dashboard" description="Ringkasan SPJ Makan Minum Rapat" />
+                <AppPageHeader title="Dashboard" description="Ringkasan SPJ Makan Minum" />
 
                 {/* 2. Top Stats Cards */}
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -248,11 +248,10 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                 <button
                                                     key={item.id}
                                                     onClick={() => setSelectedId(item.id)}
-                                                    className={`w-full rounded-lg px-4 py-2.5 text-left text-sm font-bold transition-all ${
-                                                        isActive
+                                                    className={`w-full rounded-lg px-4 py-2.5 text-left text-sm font-bold transition-all ${isActive
                                                             ? 'bg-blue-200 text-slate-800'
                                                             : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {item.nama_item}
                                                 </button>
@@ -344,10 +343,10 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                             <p className="text-sm font-medium">Belum ada data SPJ</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="max-h-[60vh] overflow-auto">
                             <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="glass-table-head text-xs uppercase tracking-wider text-slate-500 font-bold">
+                                <thead className="sticky top-0 z-10 bg-white/95 shadow-sm backdrop-blur dark:bg-slate-900/95">
+                                    <tr className="glass-table-head text-xs font-bold tracking-wider text-slate-500 uppercase">
                                         <th className="px-4 py-3 text-center w-10">#</th>
                                         <th className="px-4 py-3 text-left">KEGIATAN</th>
                                         <th className="px-4 py-3 text-left">ITEM HPS</th>
@@ -366,7 +365,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                     {recent?.map((item, index) => {
                                         const { done, total, pct } = dokumenProgress(item);
                                         const itemsText = item.spj_items?.map(i => i.item_hps?.nama_item).filter(Boolean).join(', ') || '-';
-                                        
+
                                         return (
                                             <tr key={item.id} className="glass-table-row">
                                                 <td className="px-4 py-3 text-center font-medium text-slate-500">{index + 1}</td>
@@ -412,7 +411,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                         } else if (displayTracking === 'Dokumen Tidak Lengkap' || displayTracking === 'Menunggu Kelengkapan' || displayTracking === 'Tidak Lengkap' || displayTracking === 'SSPD & SPOD') {
                                                             colorClass = "border-red-200 bg-red-100 text-red-600";
                                                         }
-                                                        
+
                                                         return (
                                                             <span className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold leading-tight text-center min-w-[85px] max-w-[110px] whitespace-normal shadow-sm ${colorClass}`}>
                                                                 {displayTracking}
@@ -423,13 +422,13 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                 <td className="px-4 py-3 text-center">
                                                     <div className="flex items-center justify-center gap-2 text-slate-400">
                                                         <Link href={`/spj/${item.id}`} className="hover:text-sky-600 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
                                                         </Link>
                                                         <Link href={`/spj/${item.id}/edit`} className="hover:text-emerald-600 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
                                                         </Link>
                                                         <button className="hover:text-rose-600 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
                                                         </button>
                                                     </div>
                                                 </td>
