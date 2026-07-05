@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -26,10 +27,16 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'name' => \Illuminate\Support\Str::slug($request->name, '_')
+        ]);
+
         $request->validate([
-            'name' => 'required|string|unique:roles,name',
+            'name' => ['required', 'string', Rule::unique('roles', 'name')],
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,name'
+        ], [
+            'name.unique' => 'Nama sudah terdaftar.',
         ]);
 
         $role = Role::create(['name' => $request->name]);
@@ -52,10 +59,16 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
+        $request->merge([
+            'name' => \Illuminate\Support\Str::slug($request->name, '_')
+        ]);
+
         $request->validate([
-            'name' => 'required|string|unique:roles,name,' . $role->id,
+            'name' => ['required', 'string', Rule::unique('roles', 'name')->ignore($role->id)],
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,name'
+        ], [
+            'name.unique' => 'Nama sudah terdaftar.',
         ]);
 
         $role->update(['name' => $request->name]);

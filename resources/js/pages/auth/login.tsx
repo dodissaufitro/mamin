@@ -3,9 +3,7 @@ import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
@@ -92,28 +90,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="remember"
-                                tabIndex={3}
-                                checked={data.remember}
-                                onCheckedChange={(checked) => setData('remember', checked === true)}
-                            />
-                            <Label htmlFor="remember" className="text-sm font-normal text-gray-600">
-                                Remember me
-                            </Label>
-                        </div>
-                        {canResetPassword && (
-                            <TextLink
-                                href={route('password.request')}
-                                className="text-sm text-gray-700 underline underline-offset-2"
-                                tabIndex={5}
-                            >
-                                Forgot password?
-                            </TextLink>
-                        )}
-                    </div>
 
                     <Button
                         type="submit"

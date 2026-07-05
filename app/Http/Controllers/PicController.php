@@ -22,8 +22,10 @@ class PicController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => 'required|string|max:255|unique:pics,nama',
             'jabatan' => 'nullable|string|max:255',
+        ], [
+            'nama.unique' => 'Nama sudah terdaftar.',
         ]);
 
         Pic::create($request->only('nama', 'jabatan'));
@@ -39,8 +41,10 @@ class PicController extends Controller
     public function update(Request $request, Pic $pic)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => 'required|string|max:255|unique:pics,nama,'.$pic->id,
             'jabatan' => 'nullable|string|max:255',
+        ], [
+            'nama.unique' => 'Nama sudah terdaftar.',
         ]);
 
         $pic->update($request->only('nama', 'jabatan'));

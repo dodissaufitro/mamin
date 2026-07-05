@@ -16,6 +16,7 @@ interface ItemHpsRow {
     nama_item: string;
     volume: string | number;
     harga_unit: string | number;
+    kategori: string | null;
     jenis_dokumens: JenisDokumenItem[];
 }
 
@@ -36,6 +37,7 @@ export default function ItemHpsEdit({ item, jenisDokumens }: Props) {
         nama_item: item.nama_item,
         volume: String(item.volume),
         harga_unit: String(item.harga_unit),
+        kategori: item.kategori ?? '',
         jenis_dokumen_ids: item.jenis_dokumens.map((d) => d.id),
     });
 
@@ -90,6 +92,21 @@ export default function ItemHpsEdit({ item, jenisDokumens }: Props) {
                                 onChange={(e) => setData('harga_unit', e.target.value)}
                             />
                             {errors.harga_unit && <p className="text-xs text-red-500">{errors.harga_unit}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className={`text-sm font-semibold ${glassLabelClass}`}>
+                                Kategori
+                            </label>
+                            <select
+                                className={glassInputClass}
+                                value={data.kategori}
+                                onChange={(e) => setData('kategori', e.target.value)}
+                            >
+                                <option value="">Pilih Kategori (opsional)</option>
+                                <option value="Snack dan Makanan">Snack dan Makanan</option>
+                                <option value="Kebutuhan Dapur">Kebutuhan Dapur</option>
+                            </select>
+                            {errors.kategori && <p className="text-xs text-red-500">{errors.kategori}</p>}
                         </div>
                     </div>
 

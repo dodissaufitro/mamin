@@ -137,6 +137,7 @@ class SpjItemStockService
                     'nama_item' => $item->nama_item,
                     'volume' => $item->volume,
                     'harga_unit' => $item->harga_unit,
+                    'kategori' => $item->kategori,
                     'available_volume' => $available,
                     'jenis_dokumens' => $item->jenisDokumens->map(fn ($d) => [
                         'id' => $d->id,

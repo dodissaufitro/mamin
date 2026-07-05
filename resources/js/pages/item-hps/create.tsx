@@ -26,6 +26,7 @@ export default function ItemHpsCreate({ jenisDokumens }: Props) {
         nama_item: '',
         volume: '',
         harga_unit: '',
+        kategori: '',
         jenis_dokumen_ids: defaultJenisIdsForItem(jenisDokumens) as number[],
     });
 
@@ -83,6 +84,21 @@ export default function ItemHpsCreate({ jenisDokumens }: Props) {
                                 placeholder="0"
                             />
                             {errors.harga_unit && <p className="text-xs text-red-500">{errors.harga_unit}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className={`text-sm font-semibold ${glassLabelClass}`}>
+                                Kategori
+                            </label>
+                            <select
+                                className={glassInputClass}
+                                value={data.kategori}
+                                onChange={(e) => setData('kategori', e.target.value)}
+                            >
+                                <option value="">Pilih Kategori (opsional)</option>
+                                <option value="Snack dan Makanan">Snack dan Makanan</option>
+                                <option value="Kebutuhan Dapur">Kebutuhan Dapur</option>
+                            </select>
+                            {errors.kategori && <p className="text-xs text-red-500">{errors.kategori}</p>}
                         </div>
                     </div>
 

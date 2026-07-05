@@ -22,9 +22,11 @@ class PenyediaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => 'required|string|max:255|unique:penyedias,nama',
             'alamat' => 'nullable|string|max:500',
             'telepon' => 'nullable|string|max:50',
+        ], [
+            'nama.unique' => 'Nama sudah terdaftar.',
         ]);
 
         Penyedia::create($request->only('nama', 'alamat', 'telepon'));
@@ -40,9 +42,11 @@ class PenyediaController extends Controller
     public function update(Request $request, Penyedia $penyedia)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => 'required|string|max:255|unique:penyedias,nama,'.$penyedia->id,
             'alamat' => 'nullable|string|max:500',
             'telepon' => 'nullable|string|max:50',
+        ], [
+            'nama.unique' => 'Nama sudah terdaftar.',
         ]);
 
         $penyedia->update($request->only('nama', 'alamat', 'telepon'));

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AppContentCard, AppPageHeader } from '@/components/app-page';
 import { DokumenProgressBar } from '@/components/dokumen-tracking-fields';
 import { glassBtnPrimaryClass } from '@/lib/glass-styles';
@@ -86,6 +87,9 @@ export default function SpjIndex({ data }: Props) {
     const { auth } = usePage<SharedData>().props;
     const permissions = auth.permissions ?? {};
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+
     function handleDelete(id: number) {
         if (confirm('Hapus data SPJ ini?')) {
             router.delete(`/spj/${id}`);
@@ -94,19 +98,43 @@ export default function SpjIndex({ data }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="SPJ Makan Minum" />
-            <div className="flex flex-col gap-4 p-4 md:p-6">
+            <Head title="SPJ Makan Minum Rapat" />
+            
+            <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 min-w-0 w-full">
                 <AppPageHeader
                     title="SPJ Makan Minum"
                     description="Kelola data SPJ makan dan minum rapat"
-                    action={
-                        permissions['spj.create'] ? (
+                />
+
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3 w-full">
+                        <input
+                            type="text"
+                            placeholder="Cari Kegiatan / PIC..."
+                            className="w-full sm:w-72 rounded-xl border border-slate-200 bg-white/50 px-4 py-2 text-sm shadow-sm backdrop-blur transition-all focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700/50 dark:bg-slate-900/50"
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                        />
+                        <select 
+                            className="w-full sm:w-48 rounded-xl border border-slate-200 bg-white/50 px-4 py-2 text-sm shadow-sm backdrop-blur transition-all focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700/50 dark:bg-slate-900/50"
+                            value={statusFilter}
+                            onChange={e => setStatusFilter(e.target.value)}
+                        >
+                            <option value="">Semua Status</option>
+                            <option value="Selesai">Selesai</option>
+                            <option value="SSPD & SPOD">SSPD & SPOD</option>
+                            <option value="Tidak Lengkap">Tidak Lengkap</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        {permissions['spj.create'] && (
                             <Link href="/spj/create" className={glassBtnPrimaryClass}>
                                 <Plus className="h-4 w-4" /> Tambah SPJ
                             </Link>
-                        ) : undefined
-                    }
-                />
+                        )}
+                    </div>
+                </div>
 
                 <AppContentCard className="p-0">
                     {data.data.length === 0 ? (
@@ -119,26 +147,39 @@ export default function SpjIndex({ data }: Props) {
                             )}
                         </div>
                     ) : (
-                        <div className="max-h-[60vh] overflow-auto">
-                            <table className="w-full text-sm">
+                        <div className="max-h-[60vh] overflow-auto w-full">
+                            <table className="w-full min-w-max text-sm">
                                 <thead className="sticky top-0 z-10 bg-white/95 shadow-sm backdrop-blur dark:bg-slate-900/95">
                                     <tr className="glass-table-head text-xs font-bold tracking-wider text-slate-500 uppercase">
-                                        <th className="px-4 py-3 text-center">#</th>
-                                        <th className="px-4 py-3 text-left">KEGIATAN</th>
-                                        <th className="px-4 py-3 text-left">ITEM HPS</th>
-                                        <th className="px-4 py-3 text-right">TOTAL HARGA</th>
-                                        <th className="px-4 py-3 text-left">TGL KEGIATAN</th>
-                                        <th className="px-4 py-3 text-left">DEADLINE SPJ</th>
-                                        <th className="px-4 py-3 text-left">PENYEDIA</th>
-                                        <th className="px-4 py-3 text-left">PIC</th>
-                                        <th className="px-4 py-3 text-center">DOKUMEN</th>
-                                        <th className="px-4 py-3 text-center">KELENGKAPAN DOKUMEN</th>
-                                        <th className="px-4 py-3 text-center">TRACKING SPJ</th>
-                                        <th className="px-4 py-3 text-center">AKSI</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">#</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">KEGIATAN</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">ITEM HPS</th>
+                                        <th className="px-4 py-3 text-right whitespace-nowrap">TOTAL HARGA</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">TGL KEGIATAN</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">DEADLINE SPJ</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">PENYEDIA</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">PIC</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">DOKUMEN</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">KELENGKAPAN DOKUMEN</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">TRACKING SPJ</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">AKSI</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200/70">
-                                    {data.data.map((item, idx) => {
+                                    {data.data
+                                        .filter(item => {
+                                            const matchSearch = !searchQuery || 
+                                                (item.kegiatan?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+                                                (item.pic?.nama?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+                                            
+                                            const matchStatus = !statusFilter || 
+                                                (statusFilter === 'Tidak Lengkap' ? 
+                                                    ['Dokumen Tidak Lengkap', 'Menunggu Kelengkapan', 'Tidak Lengkap'].includes(item.tracking_spj || '') : 
+                                                    (statusFilter === 'SSPD & SPOD' ? ['SSPD & SPOD', 'SPPD & SOPD'].includes(item.tracking_spj || '') : item.tracking_spj === statusFilter));
+                                            
+                                            return matchSearch && matchStatus;
+                                        })
+                                        .map((item, idx) => {
                                         const rowNum = (data.current_page - 1) * data.per_page + idx + 1;
 
                                         const totalDok = item.dokumen_progress?.total ?? 0;

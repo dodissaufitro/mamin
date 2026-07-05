@@ -29,14 +29,17 @@ class ItemHpsController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_item' => 'required|string|max:255',
+            'nama_item' => 'required|string|max:255|unique:item_hps,nama_item',
             'volume' => 'required|numeric|min:0',
             'harga_unit' => 'required|numeric|min:0',
+            'kategori' => 'nullable|string|in:Snack dan Makanan,Kebutuhan Dapur',
             'jenis_dokumen_ids' => 'nullable|array',
             'jenis_dokumen_ids.*' => 'exists:jenis_dokumens,id',
+        ], [
+            'nama_item.unique' => 'Nama sudah terdaftar.',
         ]);
 
-        $item = ItemHps::create(collect($validated)->only(['nama_item', 'volume', 'harga_unit'])->all());
+        $item = ItemHps::create(collect($validated)->only(['nama_item', 'volume', 'harga_unit', 'kategori'])->all());
         $item->jenisDokumens()->sync($validated['jenis_dokumen_ids'] ?? []);
 
         return redirect()->route('item-hps.index')->with('success', 'Item HPS berhasil ditambahkan');
@@ -55,14 +58,17 @@ class ItemHpsController extends Controller
     public function update(Request $request, ItemHps $itemHp)
     {
         $validated = $request->validate([
-            'nama_item' => 'required|string|max:255',
+            'nama_item' => 'required|string|max:255|unique:item_hps,nama_item,'.$itemHp->id,
             'volume' => 'required|numeric|min:0',
             'harga_unit' => 'required|numeric|min:0',
+            'kategori' => 'nullable|string|in:Snack dan Makanan,Kebutuhan Dapur',
             'jenis_dokumen_ids' => 'nullable|array',
             'jenis_dokumen_ids.*' => 'exists:jenis_dokumens,id',
+        ], [
+            'nama_item.unique' => 'Nama sudah terdaftar.',
         ]);
 
-        $itemHp->update(collect($validated)->only(['nama_item', 'volume', 'harga_unit'])->all());
+        $itemHp->update(collect($validated)->only(['nama_item', 'volume', 'harga_unit', 'kategori'])->all());
         $itemHp->jenisDokumens()->sync($validated['jenis_dokumen_ids'] ?? []);
 
         return redirect()->route('item-hps.index')->with('success', 'Item HPS berhasil diupdate');

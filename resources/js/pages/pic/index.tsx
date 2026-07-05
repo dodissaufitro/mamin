@@ -30,7 +30,7 @@ export default function PicIndex({ pics }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data PIC" />
-            <div className="flex flex-col gap-4 p-4 md:p-6">
+            <div className="flex flex-col gap-4 p-4 md:p-6 min-w-0 w-full">
                 <AppPageHeader
                     title="Data PIC"
                     description="Kelola penanggung jawab kegiatan"
@@ -47,13 +47,14 @@ export default function PicIndex({ pics }: Props) {
                             <p className="text-sm font-medium">Belum ada data PIC.</p>
                         </div>
                     ) : (
-                        <table className="w-full text-sm">
+                        <div className="overflow-x-auto w-full">
+                            <table className="w-full text-sm min-w-max">
                             <thead>
                                 <tr className="glass-table-head">
-                                    <th className="px-4 py-3">#</th>
-                                    <th className="px-4 py-3">Nama</th>
-                                    <th className="px-4 py-3">Jabatan</th>
-                                    <th className="px-4 py-3 text-center">Aksi</th>
+                                    <th className="px-4 py-3 whitespace-nowrap">#</th>
+                                    <th className="px-4 py-3 whitespace-nowrap">Nama</th>
+                                    <th className="px-4 py-3 whitespace-nowrap">Jabatan</th>
+                                    <th className="px-4 py-3 text-center whitespace-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/70">
@@ -75,7 +76,8 @@ export default function PicIndex({ pics }: Props) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     )}
                 </AppContentCard>
             </div>

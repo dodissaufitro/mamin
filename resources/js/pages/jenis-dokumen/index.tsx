@@ -31,7 +31,7 @@ export default function JenisDokumenIndex({ jenisDokumens }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dokumen Berlaku" />
-            <div className="flex flex-col gap-4 p-4 md:p-6">
+            <div className="flex flex-col gap-4 p-4 md:p-6 min-w-0 w-full">
                 <AppPageHeader
                     title="Dokumen Berlaku"
                     description="Kelola jenis dokumen yang dapat dipilih pada Item HPS"
@@ -51,13 +51,14 @@ export default function JenisDokumenIndex({ jenisDokumens }: Props) {
                             </Link>
                         </div>
                     ) : (
-                            <table className="w-full text-sm">
+                        <div className="overflow-x-auto w-full">
+                            <table className="w-full text-sm min-w-max">
                                 <thead>
                                     <tr className="glass-table-head">
-                                        <th className="px-4 py-3">#</th>
-                                        <th className="px-4 py-3">Nama Dokumen</th>
-                                        <th className="px-4 py-3 text-center">Digunakan Item HPS</th>
-                                        <th className="px-4 py-3 text-center">Aksi</th>
+                                        <th className="px-4 py-3 whitespace-nowrap">#</th>
+                                        <th className="px-4 py-3 whitespace-nowrap">Nama Dokumen</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">Digunakan Item HPS</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200/70">
@@ -88,7 +89,8 @@ export default function JenisDokumenIndex({ jenisDokumens }: Props) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     )}
                 </AppContentCard>
             </div>

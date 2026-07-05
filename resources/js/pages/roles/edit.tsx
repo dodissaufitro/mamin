@@ -72,7 +72,7 @@ export default function RolesEdit({ role, permissions }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit Role ${role.name}`} />
-            <div className="flex flex-col gap-4 p-4 md:p-6 max-w-5xl mx-auto">
+            <div className="flex flex-col gap-4 p-4 md:p-6 max-w-5xl mx-auto min-w-0 w-full">
                 <AppPageHeader
                     title={`Edit Role: ${role.name}`}
                     description="Ubah nama role atau hak akses matriksnya"
@@ -114,30 +114,30 @@ export default function RolesEdit({ role, permissions }: Props) {
                                 <p className="text-sm font-medium text-slate-500 mt-0.5">Tentukan otorisasi fungsi secara mendetail untuk role ini pada setiap modul sistem.</p>
                             </div>
                             
-                            <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-sm shadow-sm">
-                                <table className="w-full text-sm text-left">
+                            <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-sm shadow-sm w-full">
+                                <table className="w-full text-sm text-left min-w-max">
                                     <thead className="bg-slate-50/80 text-slate-600 border-b border-slate-200/80">
                                         <tr>
-                                            <th className="px-5 py-5 font-bold uppercase tracking-wider text-xs">Modul Sistem</th>
-                                            <th className="px-3 py-5 text-center w-28">
+                                            <th className="px-5 py-5 font-bold uppercase tracking-wider text-xs whitespace-nowrap">Modul Sistem</th>
+                                            <th className="px-3 py-5 text-center w-28 whitespace-nowrap">
                                                 <div className="flex flex-col items-center gap-1.5">
                                                     <span className="bg-blue-100 text-blue-700 p-2 rounded-xl shadow-sm"><Eye className="w-4 h-4"/></span>
                                                     <span className="font-bold text-xs uppercase tracking-wider text-slate-600">View</span>
                                                 </div>
                                             </th>
-                                            <th className="px-3 py-5 text-center w-28">
+                                            <th className="px-3 py-5 text-center w-28 whitespace-nowrap">
                                                 <div className="flex flex-col items-center gap-1.5">
                                                     <span className="bg-emerald-100 text-emerald-700 p-2 rounded-xl shadow-sm"><PlusCircle className="w-4 h-4"/></span>
                                                     <span className="font-bold text-xs uppercase tracking-wider text-slate-600">Create</span>
                                                 </div>
                                             </th>
-                                            <th className="px-3 py-5 text-center w-28">
+                                            <th className="px-3 py-5 text-center w-28 whitespace-nowrap">
                                                 <div className="flex flex-col items-center gap-1.5">
                                                     <span className="bg-amber-100 text-amber-700 p-2 rounded-xl shadow-sm"><Edit2 className="w-4 h-4"/></span>
                                                     <span className="font-bold text-xs uppercase tracking-wider text-slate-600">Update</span>
                                                 </div>
                                             </th>
-                                            <th className="px-3 py-5 text-center w-28">
+                                            <th className="px-3 py-5 text-center w-28 whitespace-nowrap">
                                                 <div className="flex flex-col items-center gap-1.5">
                                                     <span className="bg-rose-100 text-rose-700 p-2 rounded-xl shadow-sm"><Trash2 className="w-4 h-4"/></span>
                                                     <span className="font-bold text-xs uppercase tracking-wider text-slate-600">Delete</span>

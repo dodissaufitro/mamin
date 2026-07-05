@@ -49,7 +49,7 @@ export default function RolesIndex({ roles }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Role" />
-            <div className="flex flex-col gap-4 p-4 md:p-6 max-w-7xl mx-auto">
+            <div className="flex flex-col gap-4 p-4 md:p-6 max-w-7xl mx-auto min-w-0 w-full">
                 <AppPageHeader
                     title="Manajemen Role"
                     description="Atur role dan kelompok hak akses pengguna secara visual"
@@ -66,13 +66,14 @@ export default function RolesIndex({ roles }: Props) {
                             <p className="text-sm font-medium">Belum ada data role.</p>
                         </div>
                     ) : (
-                        <table className="w-full text-sm">
+                        <div className="overflow-x-auto w-full">
+                            <table className="w-full text-sm min-w-max">
                             <thead>
                                 <tr className="bg-slate-50/80 border-b border-slate-200/80">
-                                    <th className="px-5 py-4 text-left font-bold text-slate-600 w-16 uppercase tracking-wider text-xs">#</th>
-                                    <th className="px-5 py-4 text-left font-bold text-slate-600 w-48 uppercase tracking-wider text-xs">Nama Role</th>
-                                    <th className="px-5 py-4 text-left font-bold text-slate-600 uppercase tracking-wider text-xs">Hak Akses Modul (Permissions)</th>
-                                    <th className="px-5 py-4 text-center font-bold text-slate-600 w-24 uppercase tracking-wider text-xs">Aksi</th>
+                                    <th className="px-5 py-4 text-left font-bold text-slate-600 w-16 uppercase tracking-wider text-xs whitespace-nowrap">#</th>
+                                    <th className="px-5 py-4 text-left font-bold text-slate-600 w-48 uppercase tracking-wider text-xs whitespace-nowrap">Nama Role</th>
+                                    <th className="px-5 py-4 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Hak Akses Modul (Permissions)</th>
+                                    <th className="px-5 py-4 text-center font-bold text-slate-600 w-24 uppercase tracking-wider text-xs whitespace-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100/80">
@@ -130,7 +131,8 @@ export default function RolesIndex({ roles }: Props) {
                                     );
                                 })}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     )}
                 </AppContentCard>
             </div>

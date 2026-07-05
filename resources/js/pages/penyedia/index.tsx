@@ -31,7 +31,7 @@ export default function PenyediaIndex({ penyedias }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data Penyedia" />
-            <div className="flex flex-col gap-4 p-4 md:p-6">
+            <div className="flex flex-col gap-4 p-4 md:p-6 min-w-0 w-full">
                 <AppPageHeader
                     title="Data Penyedia"
                     description="Kelola daftar penyedia catering"
@@ -48,14 +48,15 @@ export default function PenyediaIndex({ penyedias }: Props) {
                             <p className="text-sm font-medium">Belum ada data penyedia.</p>
                         </div>
                     ) : (
-                        <table className="w-full text-sm">
+                        <div className="overflow-x-auto w-full">
+                            <table className="w-full text-sm min-w-max">
                             <thead>
                                 <tr className="glass-table-head">
-                                    <th className="px-4 py-3">#</th>
-                                    <th className="px-4 py-3">Nama</th>
-                                    <th className="px-4 py-3">Alamat</th>
-                                    <th className="px-4 py-3">Telepon</th>
-                                    <th className="px-4 py-3 text-center">Aksi</th>
+                                    <th className="px-4 py-3 whitespace-nowrap">#</th>
+                                    <th className="px-4 py-3 whitespace-nowrap">Nama</th>
+                                    <th className="px-4 py-3 whitespace-nowrap">Alamat</th>
+                                    <th className="px-4 py-3 whitespace-nowrap">Telepon</th>
+                                    <th className="px-4 py-3 text-center whitespace-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/70">
@@ -78,7 +79,8 @@ export default function PenyediaIndex({ penyedias }: Props) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     )}
                 </AppContentCard>
             </div>

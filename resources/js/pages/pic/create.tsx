@@ -9,8 +9,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Tambah PIC', href: '/pic/create' },
 ];
 
-
-
 export default function PicCreate() {
     const { data, setData, post, processing, errors } = useForm({ nama: '', jabatan: '' });
 
@@ -32,7 +30,13 @@ export default function PicCreate() {
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className={`text-sm font-semibold ${glassLabelClass}`}>Jabatan</label>
-                        <input type="text" className={glassInputClass} value={data.jabatan} onChange={e => setData('jabatan', e.target.value)} placeholder="Jabatan (opsional)" />
+                        <select className={glassInputClass} value={data.jabatan} onChange={e => setData('jabatan', e.target.value)}>
+                            <option value="">Pilih Jabatan (opsional)</option>
+                            <option value="Staff Seksi Pembiayaan Perumahan">Staff Seksi Pembiayaan Perumahan</option>
+                            <option value="Staff Seksi Investasi dan Manajemen Keuangan">Staff Seksi Investasi dan Manajemen Keuangan</option>
+                            <option value="Staff Sub Bagian Tata Usaha">Staff Sub Bagian Tata Usaha</option>
+                            <option value="Staff Sub Bagian Keuangan">Staff Sub Bagian Keuangan</option>
+                        </select>
                         {errors.jabatan && <p className="text-xs text-red-500">{errors.jabatan}</p>}
                     </div>
                     <div className="flex justify-end gap-3 pt-2">

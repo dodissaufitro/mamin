@@ -29,8 +29,10 @@ class JenisDokumenController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => 'required|string|max:255|unique:jenis_dokumens,nama',
             'kode' => 'nullable|string|max:255|unique:jenis_dokumens,kode',
+        ], [
+            'nama.unique' => 'Nama sudah terdaftar.',
         ]);
 
         JenisDokumen::create([
@@ -52,8 +54,10 @@ class JenisDokumenController extends Controller
     public function update(Request $request, JenisDokumen $jenis_dokuman)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => 'required|string|max:255|unique:jenis_dokumens,nama,'.$jenis_dokuman->id,
             'kode' => 'nullable|string|max:255|unique:jenis_dokumens,kode,'.$jenis_dokuman->id,
+        ], [
+            'nama.unique' => 'Nama sudah terdaftar.',
         ]);
 
         $jenis_dokuman->update([

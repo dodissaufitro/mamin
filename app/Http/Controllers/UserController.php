@@ -38,10 +38,12 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:users,name',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Password::defaults()],
             'role' => ['required', 'string', 'exists:roles,name'],
+        ], [
+            'name.unique' => 'Nama sudah terdaftar.',
         ]);
 
         $user = User::create([
@@ -71,10 +73,12 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:users,name,'.$user->id,
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,'.$user->id,
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'role' => ['required', 'string', 'exists:roles,name'],
+        ], [
+            'name.unique' => 'Nama sudah terdaftar.',
         ]);
 
         if ($user->id === auth()->id() && $validated['role'] !== 'super_admin' && $user->hasRole('super_admin')) {

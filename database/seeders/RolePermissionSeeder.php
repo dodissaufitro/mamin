@@ -57,7 +57,7 @@ class RolePermissionSeeder extends Seeder
         $rolePic = Role::firstOrCreate(['name' => 'pic']);
         $rolePic->syncPermissions([
             'dashboard.view',
-            'spj.view', 'spj.create', 'spj.delete',
+            'spj.view', 'spj.create', 'spj.update', 'spj.delete',
         ]);
 
         $roleBendahara = Role::firstOrCreate(['name' => 'bendahara']);

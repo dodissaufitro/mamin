@@ -17,6 +17,7 @@ class ItemHps extends Model
         'nama_item',
         'volume',
         'harga_unit',
+        'kategori',
     ];
 
     protected function casts(): array

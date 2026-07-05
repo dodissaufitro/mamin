@@ -11,6 +11,7 @@ interface SpjDokumenUploadFieldsProps {
     onToggleRemove: (jenisId: number, remove: boolean) => void;
     errors?: Record<string, string>;
     description?: string;
+    isReadOnly?: boolean;
 }
 
 export function SpjDokumenUploadFields({
@@ -22,6 +23,7 @@ export function SpjDokumenUploadFields({
     onToggleRemove,
     errors,
     description,
+    isReadOnly = false,
 }: SpjDokumenUploadFieldsProps) {
     const uploadsByJenis = useMemo(() => uploadedMap(existingUploads), [existingUploads]);
 
@@ -82,8 +84,9 @@ export function SpjDokumenUploadFields({
                             {existing && !markedRemove && (
                                 <button
                                     type="button"
-                                    onClick={() => onToggleRemove(jenis.id, true)}
-                                    className="inline-flex items-center gap-1 rounded-md border border-rose-200 px-2 py-1 text-xs text-rose-700 hover:bg-rose-50"
+                                    disabled={isReadOnly}
+                                    onClick={() => !isReadOnly && onToggleRemove(jenis.id, true)}
+                                    className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs ${isReadOnly ? 'border-slate-200 text-slate-400 cursor-not-allowed' : 'border-rose-200 text-rose-700 hover:bg-rose-50'}`}
                                 >
                                     <Trash2 className="h-3 w-3" />
                                     Hapus
@@ -92,8 +95,9 @@ export function SpjDokumenUploadFields({
                             {markedRemove && (
                                 <button
                                     type="button"
-                                    onClick={() => onToggleRemove(jenis.id, false)}
-                                    className="text-xs font-medium text-violet-600 hover:underline"
+                                    disabled={isReadOnly}
+                                    onClick={() => !isReadOnly && onToggleRemove(jenis.id, false)}
+                                    className={`text-xs font-medium ${isReadOnly ? 'text-slate-400 cursor-not-allowed' : 'text-violet-600 hover:underline'}`}
                                 >
                                     Batalkan hapus
                                 </button>
@@ -101,14 +105,15 @@ export function SpjDokumenUploadFields({
                         </div>
 
                         {!markedRemove && (
-                            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-violet-300 bg-violet-50/50 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:bg-violet-900/10">
-                                <Upload className="h-4 w-4 text-violet-600" />
-                                <span className="text-sm text-violet-700">
+                            <label className={`flex items-center gap-2 rounded-lg border border-dashed px-3 py-2 ${isReadOnly ? 'border-slate-300 bg-slate-50 opacity-60 cursor-not-allowed' : 'border-violet-300 bg-violet-50/50 cursor-pointer hover:bg-violet-50 dark:border-violet-700 dark:bg-violet-900/10'}`}>
+                                <Upload className={`h-4 w-4 ${isReadOnly ? 'text-slate-400' : 'text-violet-600'}`} />
+                                <span className={`text-sm ${isReadOnly ? 'text-slate-500' : 'text-violet-700'}`}>
                                     {existing ? 'Ganti file' : 'Upload file'}
                                 </span>
                                 <input
                                     type="file"
                                     className="hidden"
+                                    disabled={isReadOnly}
                                     accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
                                     onChange={(e) => onSelectFile(jenis.id, e.target.files?.[0] ?? null)}
                                 />

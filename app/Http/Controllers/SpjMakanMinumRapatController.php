@@ -154,7 +154,10 @@ class SpjMakanMinumRapatController extends Controller
             $spjData['pembayaran_spj'] = ($spjData['tracking_spj'] ?? '') === 'Selesai';
             
             $spj->update($spjData);
-            $this->dokumenService->syncUploads($spj, $request);
+            
+            if (!$request->user() || !$request->user()->hasRole('pic')) {
+                $this->dokumenService->syncUploads($spj, $request);
+            }
         });
 
         return redirect()->route('spj.index')

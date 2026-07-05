@@ -12,6 +12,7 @@ interface ItemHpsOption {
     nama_item: string;
     volume: string | number;
     harga_unit: string | number;
+    kategori?: string | null;
     available_volume: number;
     jenis_dokumens: JenisDokumenItem[];
 }
@@ -32,7 +33,7 @@ interface SpjItem {
     pic_id: number | null;
     penyedia_id: number | null;
     kegiatan: string | null;
-    jenis_mamin: 'snack dan makanan' | 'kebutuhan dapur';
+    jenis_mamin: 'snack' | 'snack dan makanan' | 'kebutuhan dapur' | string;
     spj_items?: SpjItemData[];
     spj_dokumens?: SpjDokumenItem[];
     pembayaran_spj: boolean;
@@ -80,7 +81,7 @@ type FormData = {
     deadline_spj: string;
     pic_id: string;
     kegiatan: string;
-    jenis_mamin: 'snack dan makanan' | 'kebutuhan dapur';
+    jenis_mamin: string;
     penyedia_id: string;
     items: { item_hps_id: string; jumlah_order: string }[];
     tracking_spj: string;
@@ -113,6 +114,7 @@ function formatDateForInput(dateStr?: string | null) {
 
 export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }: Props) {
     const { auth } = usePage<SharedData>().props;
+    const isPic = auth.user.role === 'pic';
     const { data, setData, processing, errors } = useForm<FormData>({
         _method: 'PUT',
         tanggal_pemesanan: formatDateForInput(spj.tanggal_pemesanan),
@@ -259,7 +261,25 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                 </select>
                             </InputField>
                             <InputField label="PIC Penanggung Jawab" error={errors.pic_id}>
-                                <select className={inputClass} value={data.pic_id} onChange={(e) => setData('pic_id', e.target.value)}>
+                                <select className={inputClass} value={data.pic_id} onChange={e => {
+                                    const selectedPicId = e.target.value;
+                                    const selectedPic = pics.find(p => String(p.id) === selectedPicId);
+                                    let newKasubbagKasi = data.kasubbag_kasi;
+                                    
+                                    if (selectedPic && selectedPic.jabatan) {
+                                        const jabatan = selectedPic.jabatan.toLowerCase();
+                                        if (jabatan.includes('pembiayaan perumahan')) newKasubbagKasi = 'Seksi Pembiayaan Perumahan';
+                                        else if (jabatan.includes('investasi') || jabatan.includes('manajemen keuangan')) newKasubbagKasi = 'Seksi Investasi dan Manajemen Resiko';
+                                        else if (jabatan.includes('tata usaha') || jabatan.includes('tu')) newKasubbagKasi = 'Sub Bagian Tata Usaha';
+                                        else if (jabatan.includes('keuangan')) newKasubbagKasi = 'Sub Bagian Keuangan';
+                                    }
+                                    
+                                    setData(prev => ({
+                                        ...prev,
+                                        pic_id: selectedPicId,
+                                        kasubbag_kasi: newKasubbagKasi
+                                    }));
+                                }}>
                                     <option value="">-- Pilih PIC --</option>
                                     {pics.filter((p) => data.jenis_mamin !== 'kebutuhan dapur' || p.jabatan?.includes('TU')).map((p) => (
                                         <option key={p.id} value={p.id}>{p.nama}{p.jabatan ? ` (${p.jabatan})` : ''}</option>
@@ -310,7 +330,16 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                                         }}
                                                     >
                                                         <option value="">-- Pilih Item --</option>
-                                                        {items.map((item) => {
+                                                        {items.filter(item => {
+                                                            if (!data.jenis_mamin) return true;
+                                                            if (data.jenis_mamin === 'snack' || data.jenis_mamin === 'snack dan makanan') {
+                                                                return item.kategori === 'Snack dan Makanan';
+                                                            }
+                                                            if (data.jenis_mamin === 'kebutuhan dapur') {
+                                                                return item.kategori === 'Kebutuhan Dapur';
+                                                            }
+                                                            return true;
+                                                        }).map((item) => {
                                                             const currentlyOrdered = data.items.filter(i => i.item_hps_id === String(item.id)).reduce((acc, i) => acc + (parseFloat(i.jumlah_order) || 0), 0);
                                                             const remaining = item.available_volume - currentlyOrdered;
                                                             
@@ -419,6 +448,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                             onToggleRemove={handleToggleRemove}
                             errors={errors}
                             description="Upload file untuk setiap dokumen yang berlaku pada Item HPS terpilih."
+                            isReadOnly={auth.user.role === 'pic'}
                         />
                     </div>
 

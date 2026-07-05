@@ -4,8 +4,8 @@ import { ItemAnggaranChart, type ItemAnggaranDatum } from '@/components/item-ang
 import { DokumenProgressBar } from '@/components/dokumen-tracking-fields';
 import { dokumenProgressFromCounts, type DokumenProgress, type JenisDokumenItem, type SpjDokumenItem } from '@/lib/dokumen';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     AlertTriangle,
@@ -24,6 +24,9 @@ import {
     Droplet,
     Info,
     Calendar,
+    Eye,
+    Pencil,
+    Trash2,
 } from 'lucide-react';
 
 interface SpjItem {
@@ -163,6 +166,15 @@ function getItemIcon(name: string) {
 }
 
 export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Props) {
+    const { auth } = usePage<SharedData>().props;
+    const permissions = auth.permissions ?? {};
+
+    function handleDelete(id: number) {
+        if (confirm('Hapus data SPJ ini?')) {
+            router.delete(`/spj/${id}`);
+        }
+    }
+
     const statCards = [
         { label: 'Total SPJ', value: stats?.total || 0, icon: ClipboardList },
         { label: 'Sudah Dibayar', value: stats?.sudah_bayar || 0, icon: CheckCircle2 },
@@ -186,7 +198,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex flex-col gap-6 p-4 md:p-6">
+            <div className="flex flex-col gap-6 p-4 md:p-6 min-w-0 w-full">
 
                 {/* 1. Header */}
                 <AppPageHeader title="Dashboard" description="Ringkasan SPJ Makan Minum" />
@@ -262,7 +274,7 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                             </div>
 
                             {/* Item Content */}
-                            <div className="flex-1 overflow-hidden">
+                            <div className="flex-1 min-w-0">
                                 <div className="mb-4">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedItem.nama_item}</h3>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">Ringkasan Penggunaan Volume</p>
@@ -343,22 +355,22 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                             <p className="text-sm font-medium">Belum ada data SPJ</p>
                         </div>
                     ) : (
-                        <div className="max-h-[60vh] overflow-auto">
-                            <table className="w-full text-sm">
+                        <div className="max-h-[60vh] overflow-auto w-full">
+                            <table className="w-full text-sm min-w-max">
                                 <thead className="sticky top-0 z-10 bg-white/95 shadow-sm backdrop-blur dark:bg-slate-900/95">
                                     <tr className="glass-table-head text-xs font-bold tracking-wider text-slate-500 uppercase">
-                                        <th className="px-4 py-3 text-center w-10">#</th>
-                                        <th className="px-4 py-3 text-left">KEGIATAN</th>
-                                        <th className="px-4 py-3 text-left">ITEM HPS</th>
-                                        <th className="px-4 py-3 text-right">TOTAL HARGA</th>
-                                        <th className="px-4 py-3 text-left">TGL KEGIATAN</th>
-                                        <th className="px-4 py-3 text-left">DEADLINE SPJ</th>
-                                        <th className="px-4 py-3 text-left">PENYEDIA</th>
-                                        <th className="px-4 py-3 text-left">PIC</th>
-                                        <th className="px-4 py-3 text-center">DOKUMEN</th>
-                                        <th className="px-4 py-3 text-center">KELENGKAPAN DOKUMEN</th>
-                                        <th className="px-4 py-3 text-center">TRACKING SPJ</th>
-                                        <th className="px-4 py-3 text-center">AKSI</th>
+                                        <th className="px-4 py-3 text-center w-10 whitespace-nowrap">#</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">KEGIATAN</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">ITEM HPS</th>
+                                        <th className="px-4 py-3 text-right whitespace-nowrap">TOTAL HARGA</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">TGL KEGIATAN</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">DEADLINE SPJ</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">PENYEDIA</th>
+                                        <th className="px-4 py-3 text-left whitespace-nowrap">PIC</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">DOKUMEN</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">KELENGKAPAN DOKUMEN</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">TRACKING SPJ</th>
+                                        <th className="px-4 py-3 text-center whitespace-nowrap">AKSI</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200/70">
@@ -420,16 +432,20 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                     })()}
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
-                                                    <div className="flex items-center justify-center gap-2 text-slate-400">
-                                                        <Link href={`/spj/${item.id}`} className="hover:text-sky-600 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <Link href={`/spj/${item.id}`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Detail">
+                                                            <Eye className="h-4 w-4" />
                                                         </Link>
-                                                        <Link href={`/spj/${item.id}/edit`} className="hover:text-emerald-600 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                                                        </Link>
-                                                        <button className="hover:text-rose-600 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
-                                                        </button>
+                                                        {permissions['spj.update'] && (
+                                                            <Link href={`/spj/${item.id}/edit`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Edit">
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
+                                                        )}
+                                                        {permissions['spj.delete'] && (
+                                                            <button onClick={() => handleDelete(item.id)} className="text-rose-600 hover:text-rose-800 transition-colors" title="Hapus">
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>

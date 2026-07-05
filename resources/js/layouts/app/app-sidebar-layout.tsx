@@ -15,7 +15,7 @@ export default function AppSidebarLayout({ children, breadcrumbs = [] }: { child
     }, []);
 
     return (
-        <div className="glass-theme relative min-h-svh text-slate-900">
+        <div className="glass-theme relative min-h-svh text-slate-900 overflow-x-hidden">
             <CloudBackground />
             <AppShell variant="sidebar">
                 <AppSidebar />
