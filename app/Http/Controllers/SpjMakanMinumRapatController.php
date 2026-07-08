@@ -70,7 +70,13 @@ class SpjMakanMinumRapatController extends Controller
             $isAdmin = $user->role === 'admin' || $user->hasRole('admin');
 
             if ($isBendahara && !$isSuperAdmin && !$isAdmin) {
-                $query->where('kelengkapan_dokumen', true);
+                $query->where('kelengkapan_dokumen', true)
+                      ->whereNotIn('tracking_spj', [
+                          'Dokumen Tidak Lengkap',
+                          'Menunggu Kelengkapan',
+                          'Tidak Lengkap',
+                          'Belum Lengkap'
+                      ]);
             }
         }
 
