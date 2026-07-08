@@ -86,6 +86,8 @@ type FormData = {
     items: { item_hps_id: string; jumlah_order: string }[];
     tracking_spj: string;
     kasubbag_kasi: string;
+    staf: string;
+    link_spj: string;
 };
 
 function InputField({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
@@ -115,6 +117,7 @@ function formatDateForInput(dateStr?: string | null) {
 export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }: Props) {
     const { auth } = usePage<SharedData>().props;
     const isPic = auth.user.role === 'pic';
+    const isBendahara = auth.user.role === 'bendahara';
     const { data, setData, processing, errors } = useForm<FormData>({
         _method: 'PUT',
         tanggal_pemesanan: formatDateForInput(spj.tanggal_pemesanan),
@@ -127,6 +130,8 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
         items: spj.spj_items?.map(i => ({ item_hps_id: i.item_hps_id.toString(), jumlah_order: i.jumlah_order.toString() })) ?? [{ item_hps_id: '', jumlah_order: '' }],
         tracking_spj: spj.tracking_spj ?? '',
         kasubbag_kasi: spj.kasubbag_kasi ?? '',
+        staf: spj.staf ?? '',
+        link_spj: spj.link_spj ?? '',
     });
 
     const [pendingUploads, setPendingUploads] = useState<Record<number, File | null>>({});
@@ -192,6 +197,8 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
 
         formData.append('tracking_spj', data.tracking_spj);
         formData.append('kasubbag_kasi', data.kasubbag_kasi);
+        formData.append('staf', data.staf);
+        formData.append('link_spj', data.link_spj);
 
         Object.entries(pendingUploads).forEach(([jenisId, file]) => {
             if (file) {
@@ -217,13 +224,13 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                         <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tanggal</h2>
                         <div className="grid gap-4 sm:grid-cols-3">
                             <InputField label="Tanggal Pemesanan" error={errors.tanggal_pemesanan}>
-                                <input type="date" className={inputClass} value={data.tanggal_pemesanan} onChange={(e) => setData('tanggal_pemesanan', e.target.value)} />
+                                <input type="date" className={inputClass} value={data.tanggal_pemesanan} onChange={(e) => setData('tanggal_pemesanan', e.target.value)} disabled={isBendahara} />
                             </InputField>
                             <InputField label="Tanggal Kegiatan" error={errors.tanggal_kegiatan}>
-                                <input type="date" className={inputClass} value={data.tanggal_kegiatan} onChange={(e) => setData('tanggal_kegiatan', e.target.value)} />
+                                <input type="date" className={inputClass} value={data.tanggal_kegiatan} onChange={(e) => setData('tanggal_kegiatan', e.target.value)} disabled={isBendahara} />
                             </InputField>
                             <InputField label="Deadline SPJ" error={errors.deadline_spj}>
-                                <input type="date" className={inputClass} value={data.deadline_spj} onChange={(e) => setData('deadline_spj', e.target.value)} />
+                                <input type="date" className={inputClass} value={data.deadline_spj} onChange={(e) => setData('deadline_spj', e.target.value)} disabled={isBendahara} />
                             </InputField>
                         </div>
                     </div>
@@ -232,7 +239,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                         <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Info Kegiatan</h2>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <InputField label="Kegiatan" error={errors.kegiatan}>
-                                <input type="text" className={inputClass} value={data.kegiatan} onChange={(e) => setData('kegiatan', e.target.value)} placeholder="Nama kegiatan" />
+                                <input type="text" className={inputClass} value={data.kegiatan} onChange={(e) => setData('kegiatan', e.target.value)} placeholder="Nama kegiatan" disabled={isBendahara} />
                             </InputField>
                             <InputField label="Jenis Mamin" error={errors.jenis_mamin}>
                                 <select className={inputClass} value={data.jenis_mamin} onChange={e => {
@@ -246,14 +253,14 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                     }));
                                     setPendingUploads({});
                                     setRemoveIds([]);
-                                }}>
+                                }} disabled={isBendahara}>
                                     <option value="snack">Snack</option>
                                     <option value="snack dan makanan">Snack dan Makanan</option>
                                     <option value="kebutuhan dapur">Kebutuhan Dapur</option>
                                 </select>
                             </InputField>
                             <InputField label="Penyedia" error={errors.penyedia_id}>
-                                <select className={inputClass} value={data.penyedia_id} onChange={(e) => setData('penyedia_id', e.target.value)}>
+                                <select className={inputClass} value={data.penyedia_id} onChange={(e) => setData('penyedia_id', e.target.value)} disabled={isBendahara}>
                                     <option value="">-- Pilih Penyedia --</option>
                                     {penyedias.map((p) => (
                                         <option key={p.id} value={p.id}>{p.nama}</option>
@@ -279,7 +286,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                         pic_id: selectedPicId,
                                         kasubbag_kasi: newKasubbagKasi
                                     }));
-                                }}>
+                                }} disabled={isBendahara}>
                                     <option value="">-- Pilih PIC --</option>
                                     {pics.filter((p) => data.jenis_mamin !== 'kebutuhan dapur' || p.jabatan?.includes('TU')).map((p) => (
                                         <option key={p.id} value={p.id}>{p.nama}{p.jabatan ? ` (${p.jabatan})` : ''}</option>
@@ -287,22 +294,28 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                 </select>
                             </InputField>
                             <div className="sm:col-span-2">
+                                <InputField label="Staf (Opsional)" error={errors.staf}>
+                                    <input type="text" className={inputClass} value={data.staf} onChange={(e) => setData('staf', e.target.value)} placeholder="Nama staf jika ada" disabled={isBendahara} />
+                                </InputField>
+                            </div>
+                            <div className="sm:col-span-2">
+                                <InputField label="Link SPJ (Opsional)" error={errors.link_spj}>
+                                    <input type="url" className={inputClass} value={data.link_spj ?? ''} onChange={(e) => setData('link_spj', e.target.value)} placeholder="https://..." disabled={isBendahara} />
+                                </InputField>
+                            </div>
+                            <div className="sm:col-span-2">
                                 <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
                                     <select 
-                                        className={`${inputClass} ${data.jenis_mamin === 'kebutuhan dapur' ? 'bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800' : ''}`} 
+                                        className={`${inputClass} bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800`} 
                                         value={data.kasubbag_kasi} 
                                         onChange={(e) => setData('kasubbag_kasi', e.target.value)}
-                                        disabled={data.jenis_mamin === 'kebutuhan dapur'}
+                                        disabled={true}
                                     >
-                                        {data.jenis_mamin !== 'kebutuhan dapur' && <option value="">-- Pilih Kasubbag/Kasi --</option>}
+                                        <option value="">-- Terisi Otomatis --</option>
                                         <option value="Sub Bagian Tata Usaha">Sub Bagian Tata Usaha</option>
-                                        {data.jenis_mamin !== 'kebutuhan dapur' && (
-                                            <>
-                                                <option value="Sub Bagian Keuangan">Sub Bagian Keuangan</option>
-                                                <option value="Seksi Investasi dan Manajemen Resiko">Seksi Investasi dan Manajemen Resiko</option>
-                                                <option value="Seksi Pembiayaan Perumahan">Seksi Pembiayaan Perumahan</option>
-                                            </>
-                                        )}
+                                        <option value="Sub Bagian Keuangan">Sub Bagian Keuangan</option>
+                                        <option value="Seksi Investasi dan Manajemen Resiko">Seksi Investasi dan Manajemen Resiko</option>
+                                        <option value="Seksi Pembiayaan Perumahan">Seksi Pembiayaan Perumahan</option>
                                     </select>
                                 </InputField>
                             </div>
@@ -328,6 +341,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                                             setPendingUploads({});
                                                             setRemoveIds([]);
                                                         }}
+                                                        disabled={isBendahara}
                                                     >
                                                         <option value="">-- Pilih Item --</option>
                                                         {items.filter(item => {
@@ -366,7 +380,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                                         placeholder="0"
                                                         min="0.01"
                                                         step="0.01"
-                                                        disabled={!formItem.item_hps_id}
+                                                        disabled={!formItem.item_hps_id || isBendahara}
                                                     />
                                                     {selectedItem && (
                                                         <div className="mt-1 flex flex-col gap-0.5">
@@ -391,7 +405,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                                 </InputField>
                                             </div>
                                             
-                                            {data.items.length > 1 && (
+                                            {data.items.length > 1 && !isBendahara && (
                                                 <div className="pt-6">
                                                     <button type="button" onClick={() => {
                                                         const newItems = data.items.filter((_, i) => i !== idx);
@@ -405,15 +419,17 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                     );
                                 })}
                                 
-                                <div className="mt-2 flex justify-start">
-                                    <button
-                                        type="button"
-                                        onClick={() => setData('items', [...data.items, { item_hps_id: '', jumlah_order: '' }])}
-                                        className="flex items-center gap-2 rounded-lg border border-violet-300 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300 dark:hover:bg-violet-900/20"
-                                    >
-                                        <Plus className="h-4 w-4" /> Tambah Item
-                                    </button>
-                                </div>
+                                {!isBendahara && (
+                                    <div className="mt-2 flex justify-start">
+                                        <button
+                                            type="button"
+                                            onClick={() => setData('items', [...data.items, { item_hps_id: '', jumlah_order: '' }])}
+                                            className="flex items-center gap-2 rounded-lg border border-violet-300 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300 dark:hover:bg-violet-900/20"
+                                        >
+                                            <Plus className="h-4 w-4" /> Tambah Item
+                                        </button>
+                                    </div>
+                                )}
                                 
                                 <div className="mt-4 flex justify-end">
                                     <div className="rounded-lg bg-violet-600 px-6 py-3 text-white shadow-md">
@@ -448,14 +464,19 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                             onToggleRemove={handleToggleRemove}
                             errors={errors}
                             description="Upload file untuk setiap dokumen yang berlaku pada Item HPS terpilih."
-                            isReadOnly={auth.user.role === 'pic'}
+                            isReadOnly={isPic || isBendahara}
                         />
                     </div>
 
                     {auth.permissions['tracking_spj.update'] && (
                         <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
                             <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking SPJ</h2>
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {!spj.kelengkapan_dokumen ? (
+                                <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+                                    Dokumen belum lengkap. Status tracking baru bisa diupdate setelah dokumen lengkap.
+                                </p>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 {trackingOptions.map((opt) => (
                                     <label key={opt} className="flex cursor-pointer items-start gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
                                         <input
@@ -468,12 +489,10 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                         <span className="text-sm text-gray-700 dark:text-gray-300 leading-tight">{opt}</span>
                                     </label>
                                 ))}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     )}
-
-
-
 
 
                     <div className="flex items-center justify-end gap-3">

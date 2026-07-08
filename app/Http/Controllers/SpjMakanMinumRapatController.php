@@ -19,12 +19,62 @@ class SpjMakanMinumRapatController extends Controller
         private readonly SpjDokumenService $dokumenService,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = SpjMakanMinumRapat::query()
+        $query = SpjMakanMinumRapat::query()
             ->with(['pic', 'penyedia', 'spjItems.itemHps.jenisDokumens', 'spjDokumens'])
-            ->latest()
-            ->paginate(15);
+            ->latest();
+
+        $filters = $request->only([
+            'kegiatan', 'item_hps', 'tanggal_kegiatan', 'deadline_spj', 'penyedia', 'pic', 'tracking_spj'
+        ]);
+
+        if (!empty($filters['kegiatan'])) {
+            $query->where('kegiatan', 'like', '%' . $filters['kegiatan'] . '%');
+        }
+        if (!empty($filters['item_hps'])) {
+            $query->whereHas('spjItems.itemHps', function ($q) use ($filters) {
+                $q->where('nama_item', 'like', '%' . $filters['item_hps'] . '%');
+            });
+        }
+        if (!empty($filters['tanggal_kegiatan'])) {
+            $query->where('tanggal_kegiatan', 'like', '%' . $filters['tanggal_kegiatan'] . '%');
+        }
+        if (!empty($filters['deadline_spj'])) {
+            $query->where('deadline_spj', 'like', '%' . $filters['deadline_spj'] . '%');
+        }
+        if (!empty($filters['penyedia'])) {
+            $query->whereHas('penyedia', function ($q) use ($filters) {
+                $q->where('nama', 'like', '%' . $filters['penyedia'] . '%');
+            });
+        }
+        if (!empty($filters['pic'])) {
+            $query->whereHas('pic', function ($q) use ($filters) {
+                $q->where('nama', 'like', '%' . $filters['pic'] . '%');
+            });
+        }
+        if (!empty($filters['tracking_spj'])) {
+            if ($filters['tracking_spj'] === 'Tidak Lengkap') {
+                $query->whereIn('tracking_spj', ['Dokumen Tidak Lengkap', 'Menunggu Kelengkapan', 'Tidak Lengkap', 'Belum Lengkap']);
+            } elseif ($filters['tracking_spj'] === 'SSPD & SPOD') {
+                $query->whereIn('tracking_spj', ['SSPD & SPOD', 'SPPD & SOPD']);
+            } else {
+                $query->where('tracking_spj', $filters['tracking_spj']);
+            }
+        }
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            $isBendahara = $user->role === 'bendahara' || $user->hasRole('bendahara');
+            $isSuperAdmin = $user->role === 'super_admin' || $user->hasRole('super_admin');
+            $isAdmin = $user->role === 'admin' || $user->hasRole('admin');
+
+            if ($isBendahara && !$isSuperAdmin && !$isAdmin) {
+                $query->where('kelengkapan_dokumen', true);
+            }
+        }
+
+        $data = $query->paginate(15)->withQueryString();
 
         $data->getCollection()->transform(function (SpjMakanMinumRapat $spj) {
             $spj->setAttribute('dokumen_progress', $this->dokumenService->progressFor($spj));
@@ -33,7 +83,10 @@ class SpjMakanMinumRapatController extends Controller
             return $spj;
         });
 
-        return Inertia::render('spj/index', ['data' => $data]);
+        return Inertia::render('spj/index', [
+            'data' => $data,
+            'filters' => $filters,
+        ]);
     }
 
     public function create()
@@ -53,7 +106,7 @@ class SpjMakanMinumRapatController extends Controller
             $validatedItems = $this->stockService->validateItems($validated['items'] ?? []);
 
             $spjData = collect($validated)->except('items')->toArray();
-            $spjData['tracking_spj'] = 'SSPD & SPOD';
+            $spjData['tracking_spj'] = 'Belum Lengkap';
             $spjData['pembayaran_spj'] = false;
             
             $spj = SpjMakanMinumRapat::create($spjData);
@@ -109,6 +162,10 @@ class SpjMakanMinumRapatController extends Controller
 
     public function edit(SpjMakanMinumRapat $spj)
     {
+        if ($spj->tracking_spj === 'Selesai') {
+            return redirect()->route('spj.index')->with('error', 'SPJ yang sudah Selesai tidak dapat diedit lagi.');
+        }
+
         $spj->load([
             'pic',
             'penyedia',
@@ -127,6 +184,27 @@ class SpjMakanMinumRapatController extends Controller
 
     public function update(Request $request, SpjMakanMinumRapat $spj)
     {
+        if ($spj->tracking_spj === 'Selesai') {
+            return redirect()->route('spj.index')->with('error', 'SPJ yang sudah Selesai tidak dapat diubah.');
+        }
+
+        $user = $request->user();
+        $isBendahara = $user && ($user->role === 'bendahara' || $user->hasRole('bendahara')) && !($user->role === 'super_admin' || $user->hasRole('super_admin')) && !($user->role === 'admin' || $user->hasRole('admin'));
+
+        if ($isBendahara) {
+            $validated = $request->validate([
+                'tracking_spj' => 'nullable|string|max:255',
+            ]);
+            
+            $spj->update([
+                'tracking_spj' => $validated['tracking_spj'] ?? $spj->tracking_spj,
+                'pembayaran_spj' => ($validated['tracking_spj'] ?? '') === 'Selesai',
+            ]);
+            
+            return redirect()->route('spj.index')
+                ->with('success', 'Data berhasil diupdate');
+        }
+
         $validated = $this->validateSpj($request);
 
         DB::transaction(function () use ($spj, $validated, $request) {
@@ -174,7 +252,7 @@ class SpjMakanMinumRapatController extends Controller
             $spj->delete();
         });
 
-        return redirect()->route('spj.index')
+        return redirect()->back()
             ->with('success', 'Data berhasil dihapus');
     }
 

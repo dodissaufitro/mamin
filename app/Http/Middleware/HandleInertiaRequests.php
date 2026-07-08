@@ -44,7 +44,7 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user() ? array_merge($request->user()->toArray(), [
-                    'role' => $request->user()->roles->pluck('name')->first() ?? 'user',
+                    'role' => $request->user()->roles->pluck('name')->first() ?? $request->user()->role ?? 'user',
                     'notifications' => $request->user()->notifications()->take(5)->get(),
                     'unread_notifications_count' => $request->user()->unreadNotifications()->count(),
                 ]) : null,

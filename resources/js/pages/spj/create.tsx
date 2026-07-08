@@ -189,20 +189,16 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                             <div className="sm:col-span-2">
                                 <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
                                     <select 
-                                        className={`${inputClass} ${data.jenis_mamin === 'kebutuhan dapur' ? 'bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800' : ''}`} 
+                                        className={`${inputClass} bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800`} 
                                         value={data.kasubbag_kasi} 
                                         onChange={e => setData('kasubbag_kasi', e.target.value)}
-                                        disabled={data.jenis_mamin === 'kebutuhan dapur'}
+                                        disabled={true}
                                     >
-                                        {data.jenis_mamin !== 'kebutuhan dapur' && <option value="">-- Pilih Kasubbag/Kasi --</option>}
+                                        <option value="">-- Terisi Otomatis --</option>
                                         <option value="Sub Bagian Tata Usaha">Sub Bagian Tata Usaha</option>
-                                        {data.jenis_mamin !== 'kebutuhan dapur' && (
-                                            <>
-                                                <option value="Sub Bagian Keuangan">Sub Bagian Keuangan</option>
-                                                <option value="Seksi Investasi dan Manajemen Resiko">Seksi Investasi dan Manajemen Resiko</option>
-                                                <option value="Seksi Pembiayaan Perumahan">Seksi Pembiayaan Perumahan</option>
-                                            </>
-                                        )}
+                                        <option value="Sub Bagian Keuangan">Sub Bagian Keuangan</option>
+                                        <option value="Seksi Investasi dan Manajemen Resiko">Seksi Investasi dan Manajemen Resiko</option>
+                                        <option value="Seksi Pembiayaan Perumahan">Seksi Pembiayaan Perumahan</option>
                                     </select>
                                 </InputField>
                             </div>

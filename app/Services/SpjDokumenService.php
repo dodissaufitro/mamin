@@ -150,7 +150,10 @@ class SpjDokumenService
         $requiredIds = $requiredIds->unique();
 
         if ($requiredIds->isEmpty()) {
-            $spj->update(['kelengkapan_dokumen' => false]);
+            $spj->update([
+                'kelengkapan_dokumen' => false,
+                'tracking_spj' => 'Belum Lengkap'
+            ]);
             return;
         }
 
@@ -161,9 +164,11 @@ class SpjDokumenService
 
         if ($complete) {
             $currentTracking = $spj->tracking_spj;
-            if (empty($currentTracking) || in_array($currentTracking, ['Dokumen Tidak Lengkap', 'Menunggu Kelengkapan', 'Tidak Lengkap', 'SPPD & SOPD'], true)) {
+            if (empty($currentTracking) || in_array($currentTracking, ['Lengkap', 'Dokumen Tidak Lengkap', 'Menunggu Kelengkapan', 'Tidak Lengkap', 'Belum Lengkap'], true)) {
                 $updateData['tracking_spj'] = 'SSPD & SPOD';
             }
+        } else {
+            $updateData['tracking_spj'] = 'Belum Lengkap';
         }
 
         $spj->update($updateData);

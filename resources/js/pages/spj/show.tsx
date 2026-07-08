@@ -63,7 +63,12 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     );
 }
 
+import { usePage } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+
 export default function SpjShow({ spj, dokumenProgress }: Props) {
+    const { auth } = usePage<SharedData>().props;
+
     function handleDelete() {
         if (confirm('Hapus data SPJ ini?')) {
             router.delete(`/spj/${spj.id}`, { onSuccess: () => router.visit('/spj') });
@@ -93,12 +98,16 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                         <h1 className="text-lg font-bold text-violet-800 dark:text-violet-200">{spj.kegiatan ?? 'Detail SPJ'}</h1>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                        <Link href={`/spj/${spj.id}/edit`} className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-100 dark:border-sky-700 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40 transition-colors shadow-sm">
-                            <Pencil className="h-3.5 w-3.5" /> Edit
-                        </Link>
-                        <button onClick={handleDelete} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-800/40 transition-colors shadow-sm">
-                            <Trash2 className="h-3.5 w-3.5" /> Hapus
-                        </button>
+                        {auth.permissions['spj.update'] && spj.tracking_spj !== 'Selesai' && (
+                            <Link href={`/spj/${spj.id}/edit`} className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-100 dark:border-sky-700 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40 transition-colors shadow-sm">
+                                <Pencil className="h-3.5 w-3.5" /> Edit
+                            </Link>
+                        )}
+                        {auth.permissions['spj.delete'] && (
+                            <button onClick={handleDelete} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-800/40 transition-colors shadow-sm">
+                                <Trash2 className="h-3.5 w-3.5" /> Hapus
+                            </button>
+                        )}
                     </div>
                 </div>
 

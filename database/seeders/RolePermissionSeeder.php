@@ -65,6 +65,7 @@ class RolePermissionSeeder extends Seeder
             'dashboard.view',
             'spj.view', 'spj.update',
             'inbox.view',
+            'tracking_spj.update',
         ]);
 
         // Assign existing users to the new roles based on their old string roles
