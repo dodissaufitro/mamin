@@ -468,7 +468,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                         />
                     </div>
 
-                    {auth.permissions['tracking_spj.update'] && (
+                    {(auth.permissions['tracking_spj.update'] || isBendahara) && (
                         <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
                             <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tracking SPJ</h2>
                             {!spj.kelengkapan_dokumen ? (
