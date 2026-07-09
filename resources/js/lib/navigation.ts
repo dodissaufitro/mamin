@@ -69,6 +69,12 @@ export function getNavItems(auth: SharedData['auth']): NavItem[] {
         });
     }
 
+    items.push({
+        title: 'NamaPenyedium',
+        url: '/nama-penyedia',
+        icon: LayoutGrid,
+    });
+
     return items;
 }
 

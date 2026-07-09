@@ -192,7 +192,16 @@ Route::middleware(['auth'])->group(function () {
         auth()->user()->notifications()->findOrFail($id)->markAsRead();
         return back();
     })->name('notifications.read');
+    // Resource Builder Route (Hanya untuk Admin / Local)
+    Route::get('dev/builder', [\App\Http\Controllers\ResourceGeneratorController::class, 'index'])->name('builder.index');
+    Route::get('dev/builder/menus', [\App\Http\Controllers\ResourceGeneratorController::class, 'menus'])->name('builder.menus');
+    Route::delete('dev/builder/menus/{name}', [\App\Http\Controllers\ResourceGeneratorController::class, 'destroyMenu'])->name('builder.destroy');
+    Route::get('dev/builder/schemas', [\App\Http\Controllers\ResourceGeneratorController::class, 'getSchemas'])->name('builder.schemas');
+    Route::post('dev/builder', [\App\Http\Controllers\ResourceGeneratorController::class, 'generate'])->name('builder.generate');
+
 });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+Route::resource('nama-penyedia', \App\Http\Controllers\NamaPenyediumController::class)->middleware(['auth']);
