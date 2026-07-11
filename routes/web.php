@@ -204,4 +204,4 @@ Route::middleware(['auth'])->group(function () {
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 
-Route::resource('nama-penyedia', \App\Http\Controllers\NamaPenyediumController::class)->middleware(['auth']);
+Route::resource('pics', \App\Http\Controllers\PicController::class)->middleware(['auth']);

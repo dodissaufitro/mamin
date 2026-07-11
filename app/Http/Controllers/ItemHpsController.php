@@ -39,7 +39,9 @@ class ItemHpsController extends Controller
             'nama_item.unique' => 'Nama sudah terdaftar.',
         ]);
 
-        $item = ItemHps::create(collect($validated)->only(['nama_item', 'volume', 'harga_unit', 'kategori'])->all());
+        $data = collect($validated)->only(['nama_item', 'volume', 'harga_unit', 'kategori'])->all();
+        $data['sisa_volume'] = $validated['volume'];
+        $item = ItemHps::create($data);
         $item->jenisDokumens()->sync($validated['jenis_dokumen_ids'] ?? []);
 
         return redirect()->route('item-hps.index')->with('success', 'Item HPS berhasil ditambahkan');
@@ -68,7 +70,13 @@ class ItemHpsController extends Controller
             'nama_item.unique' => 'Nama sudah terdaftar.',
         ]);
 
-        $itemHp->update(collect($validated)->only(['nama_item', 'volume', 'harga_unit', 'kategori'])->all());
+        $data = collect($validated)->only(['nama_item', 'volume', 'harga_unit', 'kategori'])->all();
+        
+        // Adjust sisa_volume based on the change in volume
+        $volumeDiff = $validated['volume'] - $itemHp->volume;
+        $data['sisa_volume'] = $itemHp->sisa_volume + $volumeDiff;
+        
+        $itemHp->update($data);
         $itemHp->jenisDokumens()->sync($validated['jenis_dokumen_ids'] ?? []);
 
         return redirect()->route('item-hps.index')->with('success', 'Item HPS berhasil diupdate');

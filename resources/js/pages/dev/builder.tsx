@@ -275,15 +275,23 @@ export default function Builder() {
                                     </div>
                                     {field.type === 'relation' && (
                                         <div className="w-full sm:w-1/3 flex flex-col gap-2">
-                                            <label className="text-xs font-bold text-gray-600 dark:text-gray-400">Model Relasi</label>
-                                            <input 
-                                                type="text" 
-                                                className={inputClass} 
-                                                value={field.related_model || ''} 
-                                                onChange={e => updateField(field.id, 'related_model', e.target.value)} 
-                                                placeholder="contoh: Kategori"
-                                                required={field.type === 'relation'}
-                                            />
+                                            <label className="text-xs font-bold text-gray-600 dark:text-gray-400">Model Relasi Target</label>
+                                            <div className="relative">
+                                                <select 
+                                                    className={selectClass} 
+                                                    value={field.related_model || ''} 
+                                                    onChange={e => updateField(field.id, 'related_model', e.target.value)}
+                                                    required={field.type === 'relation'}
+                                                >
+                                                    <option value="">-- Pilih Resource --</option>
+                                                    {schemas.map((s, idx) => (
+                                                        <option key={idx} value={s.resource_name}>{s.resource_name}</option>
+                                                    ))}
+                                                </select>
+                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                     <div className="w-full sm:w-auto flex justify-end pb-1">

@@ -26,7 +26,7 @@ class SpjMakanMinumRapatController extends Controller
             ->latest();
 
         $filters = $request->only([
-            'kegiatan', 'item_hps', 'tanggal_kegiatan', 'deadline_spj', 'penyedia', 'pic', 'tracking_spj'
+            'kegiatan', 'item_hps', 'tanggal_kegiatan', 'deadline_spj', 'penyedia', 'pic', 'tracking_spj', 'total_harga', 'kelengkapan_dokumen'
         ]);
 
         if (!empty($filters['kegiatan'])) {
@@ -61,6 +61,13 @@ class SpjMakanMinumRapatController extends Controller
             } else {
                 $query->where('tracking_spj', $filters['tracking_spj']);
             }
+        }
+        if (!empty($filters['total_harga'])) {
+            $query->whereRaw('(SELECT SUM(total_harga) FROM spj_items WHERE spj_items.spj_makan_minum_rapat_id = spj_makan_minum_rapats.id) LIKE ?', ['%' . $filters['total_harga'] . '%']);
+        }
+        if (isset($filters['kelengkapan_dokumen']) && $filters['kelengkapan_dokumen'] !== '') {
+            $isLengkap = $filters['kelengkapan_dokumen'] === 'Lengkap' ? 1 : 0;
+            $query->where('kelengkapan_dokumen', $isLengkap);
         }
 
         if (auth()->check()) {
@@ -274,7 +281,7 @@ class SpjMakanMinumRapatController extends Controller
             'pic_id' => 'nullable|exists:pics,id',
             'penyedia_id' => 'nullable|exists:penyedias,id',
             'kegiatan' => 'nullable|string|max:255',
-            'jenis_mamin' => 'required|string|in:snack,snack dan makanan,kebutuhan dapur',
+            'jenis_mamin' => 'required|string|in:snack dan makanan,kebutuhan dapur',
             'items' => 'required|array|min:1',
             'items.*.item_hps_id' => 'required|exists:item_hps,id',
             'items.*.jumlah_order' => 'required|numeric|min:0.01',

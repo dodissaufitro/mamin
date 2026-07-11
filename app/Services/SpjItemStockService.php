@@ -55,7 +55,7 @@ class SpjItemStockService
                 ]);
             }
 
-            $available = (float) $item->volume;
+            $available = (float) $item->sisa_volume;
 
             if ($existing) {
                 $addedBack = $existing->spjItems->where('item_hps_id', $itemId)->sum('jumlah_order');
@@ -79,7 +79,7 @@ class SpjItemStockService
 
     public function deduct(ItemHps $item, float $qty): void
     {
-        $item->decrement('volume', $qty);
+        $item->decrement('sisa_volume', $qty);
     }
 
     public function restore(?int $itemId, mixed $qty): void
@@ -88,7 +88,7 @@ class SpjItemStockService
             return;
         }
 
-        ItemHps::query()->whereKey($itemId)->increment('volume', (float) $qty);
+        ItemHps::query()->whereKey($itemId)->increment('sisa_volume', (float) $qty);
     }
 
     public function applyUpdate(SpjMakanMinumRapat $spj, array $newItemsData): void
@@ -125,7 +125,7 @@ class SpjItemStockService
             ->orderBy('nama_item')
             ->get()
             ->map(function (ItemHps $item) use ($spj) {
-                $available = (float) $item->volume;
+                $available = (float) $item->sisa_volume;
 
                 if ($spj) {
                     $addedBack = $spj->spjItems->where('item_hps_id', $item->id)->sum('jumlah_order');
@@ -136,6 +136,7 @@ class SpjItemStockService
                     'id' => $item->id,
                     'nama_item' => $item->nama_item,
                     'volume' => $item->volume,
+                    'sisa_volume' => $item->sisa_volume,
                     'harga_unit' => $item->harga_unit,
                     'kategori' => $item->kategori,
                     'available_volume' => $available,

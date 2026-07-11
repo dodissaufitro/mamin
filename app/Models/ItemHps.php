@@ -16,6 +16,7 @@ class ItemHps extends Model
     protected $fillable = [
         'nama_item',
         'volume',
+        'sisa_volume',
         'harga_unit',
         'kategori',
     ];
@@ -24,6 +25,7 @@ class ItemHps extends Model
     {
         return [
             'volume' => 'decimal:2',
+            'sisa_volume' => 'decimal:2',
             'harga_unit' => 'decimal:2',
         ];
     }

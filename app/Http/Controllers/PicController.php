@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Pic;
@@ -8,54 +7,42 @@ use Inertia\Inertia;
 
 class PicController extends Controller
 {
-    public function index()
-    {
-        $pics = Pic::orderBy('nama')->get();
-        return Inertia::render('pic/index', ['pics' => $pics]);
+    public function index() {
+        return Inertia::render('pic/index', [
+            'data' => Pic::all()
+        ]);
     }
 
-    public function create()
-    {
+    public function create() {
         return Inertia::render('pic/create');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255|unique:pics,nama',
-            'jabatan' => 'nullable|string|max:255',
-        ], [
-            'nama.unique' => 'Nama sudah terdaftar.',
+    public function store(Request $request) {
+        $validated = $request->validate([
+            'nama' => 'required',
+            'jabatan' => 'required',
         ]);
-
-        Pic::create($request->only('nama', 'jabatan'));
-
-        return redirect()->route('pic.index')->with('success', 'PIC berhasil ditambahkan');
+        Pic::create($validated);
+        return redirect()->route('pics.index')->with('success', 'Data created!');
     }
 
-    public function edit(Pic $pic)
-    {
-        return Inertia::render('pic/edit', ['pic' => $pic]);
-    }
-
-    public function update(Request $request, Pic $pic)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255|unique:pics,nama,'.$pic->id,
-            'jabatan' => 'nullable|string|max:255',
-        ], [
-            'nama.unique' => 'Nama sudah terdaftar.',
+    public function edit(Pic $pic) {
+        return Inertia::render('pic/edit', [
+            'model' => $pic
         ]);
-
-        $pic->update($request->only('nama', 'jabatan'));
-
-        return redirect()->route('pic.index')->with('success', 'PIC berhasil diupdate');
     }
 
-    public function destroy(Pic $pic)
-    {
+    public function update(Request $request, Pic $pic) {
+        $validated = $request->validate([
+            'nama' => 'required',
+            'jabatan' => 'required',
+        ]);
+        $pic->update($validated);
+        return redirect()->route('pics.index')->with('success', 'Data updated!');
+    }
+
+    public function destroy(Pic $pic) {
         $pic->delete();
-
-        return redirect()->route('pic.index')->with('success', 'PIC berhasil dihapus');
+        return redirect()->route('pics.index')->with('success', 'Data deleted!');
     }
 }

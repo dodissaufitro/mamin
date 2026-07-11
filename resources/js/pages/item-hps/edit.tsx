@@ -15,6 +15,7 @@ interface ItemHpsRow {
     id: number;
     nama_item: string;
     volume: string | number;
+    sisa_volume: string | number;
     harga_unit: string | number;
     kategori: string | null;
     jenis_dokumens: JenisDokumenItem[];
@@ -67,7 +68,7 @@ export default function ItemHpsEdit({ item, jenisDokumens }: Props) {
                         </div>
                         <div className="flex flex-col gap-1">
                             <label className={`text-sm font-semibold ${glassLabelClass}`}>
-                                Volume <span className="text-rose-500">*</span>
+                                Volume (Total) <span className="text-rose-500">*</span>
                             </label>
                             <input
                                 type="number"
@@ -78,6 +79,7 @@ export default function ItemHpsEdit({ item, jenisDokumens }: Props) {
                                 onChange={(e) => setData('volume', e.target.value)}
                             />
                             {errors.volume && <p className="text-xs text-red-500">{errors.volume}</p>}
+                            <p className="text-xs text-slate-500 mt-1">Sisa Volume saat ini: <strong className="text-slate-800">{item.sisa_volume}</strong> (menyesuaikan proporsional jika Volume diubah)</p>
                         </div>
                         <div className="flex flex-col gap-1">
                             <label className={`text-sm font-semibold ${glassLabelClass}`}>

@@ -30,11 +30,6 @@ export function getNavItems(auth: SharedData['auth']): NavItem[] {
     }
     
     if (permissions['penyedia.view']) {
-        items.push({
-            title: 'Data Penyedia',
-            url: '/penyedia',
-            icon: Store,
-        });
     }
     
     if (permissions['item_hps.view']) {
@@ -68,12 +63,6 @@ export function getNavItems(auth: SharedData['auth']): NavItem[] {
             icon: UserCog,
         });
     }
-
-    items.push({
-        title: 'NamaPenyedium',
-        url: '/nama-penyedia',
-        icon: LayoutGrid,
-    });
 
     return items;
 }

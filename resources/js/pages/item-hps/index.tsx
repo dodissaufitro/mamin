@@ -10,6 +10,7 @@ interface ItemHpsRow {
     id: number;
     nama_item: string;
     volume: string | number;
+    sisa_volume: string | number;
     harga_unit: string | number;
     jenis_dokumens_count: number;
 }
@@ -74,7 +75,9 @@ export default function ItemHpsIndex({ items }: Props) {
                                 <tr className="glass-table-head">
                                     <th className="px-4 py-3 whitespace-nowrap">#</th>
                                     <th className="px-4 py-3 whitespace-nowrap">Nama Item</th>
-                                    <th className="px-4 py-3 text-right whitespace-nowrap">Volume</th>
+                                    <th className="px-4 py-3 text-right whitespace-nowrap">Volume (Total)</th>
+                                    <th className="px-4 py-3 text-right whitespace-nowrap">Volume (Digunakan)</th>
+                                    <th className="px-4 py-3 text-right whitespace-nowrap">Sisa Volume</th>
                                     <th className="px-4 py-3 text-right whitespace-nowrap">Harga Unit</th>
                                     <th className="px-4 py-3 text-center whitespace-nowrap">Dokumen Berlaku</th>
                                     <th className="px-4 py-3 text-center whitespace-nowrap">Aksi</th>
@@ -86,6 +89,10 @@ export default function ItemHpsIndex({ items }: Props) {
                                         <td className="px-4 py-3 text-slate-500">{idx + 1}</td>
                                         <td className="px-4 py-3 font-semibold text-slate-900">{item.nama_item}</td>
                                         <td className="px-4 py-3 text-right text-slate-700">{formatVolume(item.volume)}</td>
+                                        <td className="px-4 py-3 text-right text-rose-600 font-medium">
+                                            {formatVolume(Number(item.volume) - Number(item.sisa_volume))}
+                                        </td>
+                                        <td className="px-4 py-3 text-right text-emerald-700 font-semibold">{formatVolume(item.sisa_volume)}</td>
                                         <td className="px-4 py-3 text-right font-medium text-slate-800">{formatRupiah(item.harga_unit)}</td>
                                         <td className="px-4 py-3 text-center">
                                             <DokumenCountBadge count={item.jenis_dokumens_count} />

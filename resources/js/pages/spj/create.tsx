@@ -147,7 +147,6 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                         pic_id: newJenis === 'kebutuhan dapur' ? '' : prev.pic_id,
                                     }));
                                 }}>
-                                    <option value="snack">Snack</option>
                                     <option value="snack dan makanan">Snack dan Makanan</option>
                                     <option value="kebutuhan dapur">Kebutuhan Dapur</option>
                                 </select>
@@ -226,7 +225,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                                         <option value="">-- Pilih Item --</option>
                                                         {items.filter(item => {
                                                             if (!data.jenis_mamin) return true;
-                                                            if (data.jenis_mamin === 'snack' || data.jenis_mamin === 'snack dan makanan') {
+                                                            if (data.jenis_mamin === 'snack dan makanan') {
                                                                 return item.kategori === 'Snack dan Makanan';
                                                             }
                                                             if (data.jenis_mamin === 'kebutuhan dapur') {

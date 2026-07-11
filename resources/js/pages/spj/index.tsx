@@ -68,7 +68,9 @@ function StatusBadge({ item }: { item: SpjItem }) {
         return <span className="text-xs text-slate-500">-</span>;
     }
 
-    const displayTracking = item.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : item.tracking_spj;
+    let displayTracking = item.tracking_spj;
+    if (displayTracking === 'SPPD & SOPD') displayTracking = 'SSPD & SPOD';
+    if (displayTracking === 'Belum Lengkap') displayTracking = 'Tidak Lengkap';
 
     let colorClass = "border-sky-200 bg-sky-100 text-sky-700";
     if (displayTracking === 'Selesai') {
@@ -96,6 +98,8 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
         penyedia: propFilters?.penyedia || '',
         pic: propFilters?.pic || '',
         tracking_spj: propFilters?.tracking_spj || '',
+        total_harga: propFilters?.total_harga || '',
+        kelengkapan_dokumen: propFilters?.kelengkapan_dokumen || '',
     };
     const [filters, setFilters] = useState(initialFilters);
 
@@ -105,6 +109,12 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
 
     function applyFilters() {
         const query = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ''));
+        router.get('/spj', query as any, { preserveState: true, replace: true });
+    }
+
+    function applyFilterImmediate(key: string, value: string) {
+        const newFilters = { ...filters, [key]: value };
+        const query = Object.fromEntries(Object.entries(newFilters).filter(([_, v]) => v !== ''));
         router.get('/spj', query as any, { preserveState: true, replace: true });
     }
 
@@ -182,12 +192,14 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
                                         <th className="px-2 py-1 min-w-[120px]">
                                             <input type="text" placeholder="Cari Item..." value={filters.item_hps} onChange={e => handleFilterChange('item_hps', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
                                         </th>
-                                        <th className="px-2 py-1"></th>
-                                        <th className="px-2 py-1 min-w-[110px]">
-                                            <input type="text" placeholder="YYYY-MM-DD" value={filters.tanggal_kegiatan} onChange={e => handleFilterChange('tanggal_kegiatan', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
+                                        <th className="px-2 py-1 min-w-[120px]">
+                                            <input type="text" placeholder="Cari Harga..." value={filters.total_harga || ''} onChange={e => handleFilterChange('total_harga', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
                                         </th>
                                         <th className="px-2 py-1 min-w-[110px]">
-                                            <input type="text" placeholder="YYYY-MM-DD" value={filters.deadline_spj} onChange={e => handleFilterChange('deadline_spj', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
+                                            <input type="date" placeholder="YYYY-MM-DD" value={filters.tanggal_kegiatan} onChange={e => handleFilterChange('tanggal_kegiatan', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
+                                        </th>
+                                        <th className="px-2 py-1 min-w-[110px]">
+                                            <input type="date" placeholder="YYYY-MM-DD" value={filters.deadline_spj} onChange={e => handleFilterChange('deadline_spj', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
                                         </th>
                                         <th className="px-2 py-1 min-w-[120px]">
                                             <input type="text" placeholder="Cari Penyedia..." value={filters.penyedia} onChange={e => handleFilterChange('penyedia', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
@@ -196,13 +208,26 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
                                             <input type="text" placeholder="Cari PIC..." value={filters.pic} onChange={e => handleFilterChange('pic', e.target.value)} onKeyDown={handleKeyDown} onBlur={applyFilters} className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal" />
                                         </th>
                                         <th className="px-2 py-1"></th>
-                                        <th className="px-2 py-1"></th>
-                                        <th className="px-2 py-1 min-w-[130px]">
-                                            <select value={filters.tracking_spj} onChange={e => { handleFilterChange('tracking_spj', e.target.value); setTimeout(applyFilters, 100); }} className="w-full rounded border border-slate-200 px-1 py-1 text-[11px] outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal">
+                                        <th className="px-2 py-1 min-w-[110px]">
+                                            <select value={filters.kelengkapan_dokumen || ''} onChange={e => { handleFilterChange('kelengkapan_dokumen', e.target.value); applyFilterImmediate('kelengkapan_dokumen', e.target.value); }} className="w-full rounded border border-slate-200 px-1 py-1 text-[11px] outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal">
                                                 <option value="">Semua</option>
-                                                <option value="Selesai">Selesai</option>
-                                                <option value="SSPD & SPOD">SSPD & SPOD</option>
+                                                <option value="Lengkap">Lengkap</option>
                                                 <option value="Tidak Lengkap">Tidak Lengkap</option>
+                                            </select>
+                                        </th>
+                                        <th className="px-2 py-1 min-w-[130px]">
+                                            <select value={filters.tracking_spj} onChange={e => { handleFilterChange('tracking_spj', e.target.value); applyFilterImmediate('tracking_spj', e.target.value); }} className="w-full rounded border border-slate-200 px-1 py-1 text-[11px] outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal">
+                                                <option value="">Semua</option>
+                                                <option value="Tidak Lengkap">Tidak Lengkap</option>
+                                                <option value="SSPD & SPOD">SSPD & SPOD</option>
+                                                <option value="Bendahara Pengeluaran (Biling Pajak PPH23)">Bendahara Pengeluaran (Biling Pajak PPH23)</option>
+                                                <option value="Approval Pejabat Penatausahaan Keuangan">Approval Pejabat Penatausahaan Keuangan</option>
+                                                <option value="Approval PPATK">Approval PPATK</option>
+                                                <option value="Approval KPA I">Approval KPA I</option>
+                                                <option value="Bendahara Pengeluaran (CMS)">Bendahara Pengeluaran (CMS)</option>
+                                                <option value="Approval KPA II">Approval KPA II</option>
+                                                <option value="Upload Bukti Pembayaran">Upload Bukti Pembayaran</option>
+                                                <option value="Selesai">Selesai</option>
                                             </select>
                                         </th>
                                         <th className="px-2 py-1"></th>
@@ -254,7 +279,7 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
                                                         <Link href={`/spj/${item.id}`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Detail">
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
-                                                        {permissions['spj.update'] && (
+                                                        {permissions['spj.update'] && item.tracking_spj !== 'Selesai' && (
                                                             <Link href={`/spj/${item.id}/edit`} className="text-slate-600 hover:text-slate-900 transition-colors" title="Edit">
                                                                 <Pencil className="h-4 w-4" />
                                                             </Link>

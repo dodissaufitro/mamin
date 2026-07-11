@@ -120,6 +120,35 @@ class ResourceGeneratorController extends Controller
 
     private function generateMigration($tableName, $fields)
     {
+        if (\Illuminate\Support\Facades\Schema::hasTable($tableName)) {
+            $existingColumns = \Illuminate\Support\Facades\Schema::getColumnListing($tableName);
+            $newFields = array_filter($fields, function($f) use ($existingColumns) {
+                return !in_array(strtolower($f['name']), array_map('strtolower', $existingColumns));
+            });
+            
+            if (count($newFields) > 0) {
+                $schema = "";
+                $dropSchema = "";
+                foreach ($newFields as $field) {
+                    $name = $field['name'];
+                    $type = $field['type'];
+                    if (strtolower($name) === 'id') continue;
+                    
+                    $actualType = $type === 'relation' ? 'unsignedBigInteger' : $type;
+                    
+                    // Add nullable so existing records don't crash
+                    $schema .= "\n            \$table->{$actualType}('{$name}')->nullable();";
+                    $dropSchema .= "\n            \$table->dropColumn('{$name}');";
+                }
+                
+                $fileName = date('Y_m_d_His') . '_add_new_fields_to_' . $tableName . '_table.php';
+                $template = "<?php\n\nuse Illuminate\Database\Migrations\Migration;\nuse Illuminate\Database\Schema\Blueprint;\nuse Illuminate\Support\Facades\Schema;\n\nreturn new class extends Migration\n{\n    public function up()\n    {\n        Schema::table('{$tableName}', function (Blueprint \$table) {{$schema}\n        });\n    }\n\n    public function down()\n    {\n        Schema::table('{$tableName}', function (Blueprint \$table) {{$dropSchema}\n        });\n    }\n};";
+                
+                File::put(database_path("migrations/{$fileName}"), $template);
+            }
+            return;
+        }
+
         $className = 'Create' . str_replace(' ', '', ucwords(str_replace('_', ' ', $tableName))) . 'Table';
         $fileName = date('Y_m_d_His') . '_create_' . $tableName . '_table.php';
         
@@ -133,7 +162,9 @@ class ResourceGeneratorController extends Controller
                 continue;
             }
             
-            $schema .= "\n            \$table->{$type}('{$name}');";
+            $actualType = $type === 'relation' ? 'unsignedBigInteger' : $type;
+            
+            $schema .= "\n            \$table->{$actualType}('{$name}');";
         }
 
         $template = "<?php
@@ -163,7 +194,23 @@ return new class extends Migration
 
     private function generateModel($modelName, $fields)
     {
-        $fillable = array_map(fn($f) => "'" . Str::snake($f['name']) . "'", $fields);
+        $fillable = [];
+        $relations = "";
+        
+        foreach ($fields as $f) {
+            $name = Str::snake($f['name']);
+            if (strtolower($name) !== 'id') {
+                $fillable[] = "'" . $name . "'";
+            }
+            
+            if ($f['type'] === 'relation' && !empty($f['related_model'])) {
+                $relModelName = Str::studly(Str::singular($f['related_model']));
+                $funcName = Str::camel(str_replace('_id', '', $name)); // e.g. user_id -> user
+                
+                $relations .= "\n    public function {$funcName}()\n    {\n        return \$this->belongsTo({$relModelName}::class, '{$name}');\n    }\n";
+            }
+        }
+        
         $fillableStr = implode(', ', $fillable);
 
         $stub = "<?php
@@ -177,22 +224,63 @@ class {$modelName} extends Model
     use HasFactory;
 
     protected \$fillable = [{$fillableStr}];
-}";
+{$relations}
+}
+";
         File::put(app_path("Models/{$modelName}.php"), $stub);
     }
 
     private function generateController($modelName, $folderName, $routeName, $fields)
     {
         $validations = "";
+        $relations = [];
+        $useStatements = ["use App\Models\\{$modelName};"];
+        
         foreach ($fields as $f) {
             $name = Str::snake($f['name']);
-            $validations .= "            '{$name}' => 'required',\n";
+            if (strtolower($name) !== 'id') {
+                if ($f['type'] === 'relation' && !empty($f['related_model'])) {
+                    $validations .= "            '{$name}' => 'nullable|exists:" . Str::snake(Str::plural(Str::studly(Str::singular($f['related_model'])))) . ",id',\n";
+                    
+                    $relModelName = Str::studly(Str::singular($f['related_model']));
+                    $funcName = Str::camel(str_replace('_id', '', $name));
+                    
+                    $relations[] = [
+                        'name' => $name, // e.g. kategori_id
+                        'func' => $funcName, // e.g. kategori
+                        'model' => $relModelName // e.g. Kategori
+                    ];
+                    
+                    $useModel = "use App\Models\\{$relModelName};";
+                    if (!in_array($useModel, $useStatements)) {
+                        $useStatements[] = $useModel;
+                    }
+                } else {
+                    $validations .= "            '{$name}' => 'required',\n";
+                }
+            }
+        }
+        
+        $usesStr = implode("\n", $useStatements);
+        
+        $withStr = "";
+        if (count($relations) > 0) {
+            $withFuncs = array_map(fn($r) => "'" . $r['func'] . "'", $relations);
+            $withStr = "with([" . implode(", ", $withFuncs) . "])->get()";
+        } else {
+            $withStr = "all()";
+        }
+        
+        $relatedDataProps = "";
+        foreach ($relations as $r) {
+            $propName = Str::camel(Str::plural($r['model'])); // e.g. kategoris
+            $relatedDataProps .= "\n            '{$propName}' => {$r['model']}::all(),";
         }
 
         $stub = "<?php
 namespace App\Http\Controllers;
 
-use App\Models\\{$modelName};
+{$usesStr}
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -200,12 +288,13 @@ class {$modelName}Controller extends Controller
 {
     public function index() {
         return Inertia::render('{$folderName}/index', [
-            'data' => {$modelName}::all()
+            'data' => {$modelName}::{$withStr}
         ]);
     }
 
     public function create() {
-        return Inertia::render('{$folderName}/create');
+        return Inertia::render('{$folderName}/create', [{$relatedDataProps}
+        ]);
     }
 
     public function store(Request \$request) {
@@ -217,7 +306,7 @@ class {$modelName}Controller extends Controller
 
     public function edit({$modelName} \$" . strtolower($modelName) . ") {
         return Inertia::render('{$folderName}/edit', [
-            'model' => \$" . strtolower($modelName) . "
+            'model' => \$" . strtolower($modelName) . ",{$relatedDataProps}
         ]);
     }
 
@@ -232,7 +321,8 @@ class {$modelName}Controller extends Controller
         \$" . strtolower($modelName) . "->delete();
         return redirect()->route('{$routeName}.index')->with('success', 'Data deleted!');
     }
-}";
+}
+";
         File::put(app_path("Http/Controllers/{$modelName}Controller.php"), $stub);
     }
 
@@ -248,7 +338,13 @@ class {$modelName}Controller extends Controller
             $name = Str::snake($f['name']);
             $label = Str::title(str_replace('_', ' ', $name));
             $th .= "<th className=\"p-3 text-left font-semibold\">{$label}</th>\n";
-            $td .= "<td className=\"p-3\">{item.{$name}}</td>\n";
+            
+            if ($f['type'] === 'relation' && !empty($f['related_model'])) {
+                $funcName = Str::camel(str_replace('_id', '', $name));
+                $td .= "<td className=\"p-3\">{item.{$funcName} ? (item.{$funcName}.name || item.{$funcName}.title || item.{$funcName}.nama || item.{$name}) : item.{$name}}</td>\n";
+            } else {
+                $td .= "<td className=\"p-3\">{item.{$name}}</td>\n";
+            }
         }
         
         $chartImports = "";
@@ -358,11 +454,25 @@ export default function Index({ data }: any) {
             $label = Str::title(str_replace('_', ' ', $name));
             $useFormData[] = "{$name}: ''";
             
-            $inputs .= "
+            if ($f['type'] === 'relation' && !empty($f['related_model'])) {
+                $propName = Str::camel(Str::plural(Str::studly(Str::singular($f['related_model']))));
+                $inputs .= "
+                    <div className=\"flex flex-col gap-1\">
+                        <label className={`text-sm font-semibold \${glassLabelClass}`}>{$label}</label>
+                        <select className={glassInputClass} value={data.{$name}} onChange={e => setData('{$name}', e.target.value)}>
+                            <option value=\"\">-- Pilih {$label} --</option>
+                            {props.{$propName}?.map((opt: any) => (
+                                <option key={opt.id} value={opt.id}>{opt.name || opt.title || opt.nama || opt.id}</option>
+                            ))}
+                        </select>
+                    </div>";
+            } else {
+                $inputs .= "
                     <div className=\"flex flex-col gap-1\">
                         <label className={`text-sm font-semibold \${glassLabelClass}`}>{$label}</label>
                         <input type=\"text\" className={glassInputClass} value={data.{$name}} onChange={e => setData('{$name}', e.target.value)} />
                     </div>";
+            }
         }
         $useFormStr = implode(', ', $useFormData);
 
@@ -370,7 +480,7 @@ export default function Index({ data }: any) {
 import { Head, useForm, Link } from '@inertiajs/react';
 import { glassBtnPrimaryClass, glassBtnSecondaryClass, glassInputClass, glassLabelClass, glassPageTitleClass } from '@/lib/glass-styles';
 
-export default function Create() {
+export default function Create(props: any) {
     const { data, setData, post, processing } = useForm({ {$useFormStr} });
 
     function submit(e: any) {
@@ -402,18 +512,33 @@ export default function Create() {
             $name = Str::snake($f['name']);
             $label = Str::title(str_replace('_', ' ', $name));
             
-            $editInputs .= "
+            if ($f['type'] === 'relation' && !empty($f['related_model'])) {
+                $propName = Str::camel(Str::plural(Str::studly(Str::singular($f['related_model']))));
+                $editInputs .= "
+                    <div className=\"flex flex-col gap-1\">
+                        <label className={`text-sm font-semibold \${glassLabelClass}`}>{$label}</label>
+                        <select className={glassInputClass} value={data.{$name}} onChange={e => setData('{$name}', e.target.value)}>
+                            <option value=\"\">-- Pilih {$label} --</option>
+                            {props.{$propName}?.map((opt: any) => (
+                                <option key={opt.id} value={opt.id}>{opt.name || opt.title || opt.nama || opt.id}</option>
+                            ))}
+                        </select>
+                    </div>";
+            } else {
+                $editInputs .= "
                     <div className=\"flex flex-col gap-1\">
                         <label className={`text-sm font-semibold \${glassLabelClass}`}>{$label}</label>
                         <input type=\"text\" className={glassInputClass} value={data.{$name}} onChange={e => setData('{$name}', e.target.value)} />
                     </div>";
+            }
         }
         $editStub = "import AppLayout from '@/layouts/app-layout';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { glassBtnPrimaryClass, glassBtnSecondaryClass, glassInputClass, glassLabelClass, glassPageTitleClass } from '@/lib/glass-styles';
 
-export default function Edit({ model }: any) {
-    const { data, setData, put, processing } = useForm({ ...model });
+export default function Edit(props: any) {
+    const { model } = props;
+    const { data, setData, put, processing } = useForm(model);
 
     function submit(e: any) {
         e.preventDefault();

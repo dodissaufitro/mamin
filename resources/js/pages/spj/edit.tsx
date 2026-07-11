@@ -33,7 +33,7 @@ interface SpjItem {
     pic_id: number | null;
     penyedia_id: number | null;
     kegiatan: string | null;
-    jenis_mamin: 'snack' | 'snack dan makanan' | 'kebutuhan dapur' | string;
+    jenis_mamin: 'snack dan makanan' | 'kebutuhan dapur' | string;
     spj_items?: SpjItemData[];
     spj_dokumens?: SpjDokumenItem[];
     pembayaran_spj: boolean;
@@ -101,7 +101,7 @@ function InputField({ label, error, children }: { label: string; error?: string;
 }
 
 const inputClass =
-    'rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-400/30 dark:border-violet-700 dark:bg-gray-900 dark:text-gray-200';
+    'rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-400/30 dark:border-violet-700 dark:bg-gray-900 dark:text-gray-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:border-slate-200 dark:disabled:bg-slate-800 dark:disabled:text-slate-400 dark:disabled:border-slate-700 disabled:cursor-not-allowed';
 
 function formatDateForInput(dateStr?: string | null) {
     if (!dateStr) return '';
@@ -254,7 +254,6 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                     setPendingUploads({});
                                     setRemoveIds([]);
                                 }} disabled={isBendahara}>
-                                    <option value="snack">Snack</option>
                                     <option value="snack dan makanan">Snack dan Makanan</option>
                                     <option value="kebutuhan dapur">Kebutuhan Dapur</option>
                                 </select>
@@ -293,16 +292,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                     ))}
                                 </select>
                             </InputField>
-                            <div className="sm:col-span-2">
-                                <InputField label="Staf (Opsional)" error={errors.staf}>
-                                    <input type="text" className={inputClass} value={data.staf} onChange={(e) => setData('staf', e.target.value)} placeholder="Nama staf jika ada" disabled={isBendahara} />
-                                </InputField>
-                            </div>
-                            <div className="sm:col-span-2">
-                                <InputField label="Link SPJ (Opsional)" error={errors.link_spj}>
-                                    <input type="url" className={inputClass} value={data.link_spj ?? ''} onChange={(e) => setData('link_spj', e.target.value)} placeholder="https://..." disabled={isBendahara} />
-                                </InputField>
-                            </div>
+
                             <div className="sm:col-span-2">
                                 <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
                                     <select 
@@ -346,7 +336,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                                         <option value="">-- Pilih Item --</option>
                                                         {items.filter(item => {
                                                             if (!data.jenis_mamin) return true;
-                                                            if (data.jenis_mamin === 'snack' || data.jenis_mamin === 'snack dan makanan') {
+                                                            if (data.jenis_mamin === 'snack dan makanan') {
                                                                 return item.kategori === 'Snack dan Makanan';
                                                             }
                                                             if (data.jenis_mamin === 'kebutuhan dapur') {
