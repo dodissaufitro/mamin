@@ -151,7 +151,7 @@ export function ItemAnggaranChart({ data }: Props) {
     const chartItems = data
         .map((item) => {
             const terpakai = item.terpakai ?? 0;
-            const totalItemHps = (item.volume + terpakai) * item.harga_unit;
+            const totalItemHps = item.volume * item.harga_unit;
             const sudahDigunakan = terpakai * item.harga_unit;
 
             return {
