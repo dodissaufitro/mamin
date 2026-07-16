@@ -75,15 +75,13 @@ Route::middleware(['auth'])->group(function () {
 
                 $allSpjItems = $group->flatMap->spjItems;
                 $groupedDist = $allSpjItems->groupBy(function ($spjItem) {
-                    return $spjItem->spj->kasubbag_kasi ?: 'Tanpa Kasi/Kasubbag';
+                    return empty($spjItem->spj->kasubbag_kasi) ? 'Sub Bagian Tata Usaha' : $spjItem->spj->kasubbag_kasi;
                 });
                 
                 foreach ($groupedDist as $unit => $spjItems) {
                     $val = (float) $spjItems->sum('jumlah_order');
                     if (isset($unitTotals[$unit])) {
                         $unitTotals[$unit] += $val;
-                    } else {
-                        $unitTotals[$unit] = $val;
                     }
                 }
 
