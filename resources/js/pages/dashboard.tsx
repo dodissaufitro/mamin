@@ -261,8 +261,8 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                     key={item.id}
                                                     onClick={() => setSelectedId(item.id)}
                                                     className={`w-full rounded-lg px-4 py-2.5 text-left text-sm font-bold transition-all ${isActive
-                                                            ? 'bg-blue-200 text-slate-800'
-                                                            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                                                        ? 'bg-blue-200 text-slate-800'
+                                                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                                                         }`}
                                                 >
                                                     {item.nama_item}
@@ -416,11 +416,11 @@ export default function Dashboard({ stats, recent, itemVolumes, items = [] }: Pr
                                                 <td className="px-4 py-3 text-center">
                                                     {(() => {
                                                         if (!item.tracking_spj) return <span className="text-xs text-slate-500">-</span>;
-                                                        const displayTracking = item.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : item.tracking_spj;
+                                                        const displayTracking = item.tracking_spj === 'SPPD & SOPD' ? 'SPPD & SOPD' : item.tracking_spj;
                                                         let colorClass = "border-sky-200 bg-sky-100 text-sky-700";
                                                         if (displayTracking === 'Selesai') {
                                                             colorClass = "border-emerald-200 bg-emerald-100 text-emerald-700";
-                                                        } else if (displayTracking === 'Dokumen Tidak Lengkap' || displayTracking === 'Menunggu Kelengkapan' || displayTracking === 'Tidak Lengkap' || displayTracking === 'SSPD & SPOD') {
+                                                        } else if (displayTracking === 'Dokumen Tidak Lengkap' || displayTracking === 'Menunggu Kelengkapan' || displayTracking === 'Tidak Lengkap' || displayTracking === 'SPPD & SOPD') {
                                                             colorClass = "border-red-200 bg-red-100 text-red-600";
                                                         }
 

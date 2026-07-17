@@ -56,8 +56,8 @@ class SpjMakanMinumRapatController extends Controller
         if (!empty($filters['tracking_spj'])) {
             if ($filters['tracking_spj'] === 'Tidak Lengkap') {
                 $query->whereIn('tracking_spj', ['Dokumen Tidak Lengkap', 'Menunggu Kelengkapan', 'Tidak Lengkap', 'Belum Lengkap']);
-            } elseif ($filters['tracking_spj'] === 'SSPD & SPOD') {
-                $query->whereIn('tracking_spj', ['SSPD & SPOD', 'SPPD & SOPD']);
+            } elseif ($filters['tracking_spj'] === 'SPPD & SOPD') {
+                $query->whereIn('tracking_spj', ['SPPD & SOPD', 'SPPD & SOPD']);
             } else {
                 $query->where('tracking_spj', $filters['tracking_spj']);
             }

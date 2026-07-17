@@ -69,13 +69,13 @@ function StatusBadge({ item }: { item: SpjItem }) {
     }
 
     let displayTracking = item.tracking_spj;
-    if (displayTracking === 'SPPD & SOPD') displayTracking = 'SSPD & SPOD';
+    if (displayTracking === 'SPPD & SOPD') displayTracking = 'SPPD & SOPD';
     if (displayTracking === 'Belum Lengkap') displayTracking = 'Tidak Lengkap';
 
     let colorClass = "border-sky-200 bg-sky-100 text-sky-700";
     if (displayTracking === 'Selesai') {
         colorClass = "border-emerald-200 bg-emerald-100 text-emerald-700";
-    } else if (displayTracking === 'Dokumen Tidak Lengkap' || displayTracking === 'Menunggu Kelengkapan' || displayTracking === 'Tidak Lengkap' || displayTracking === 'SSPD & SPOD') {
+    } else if (displayTracking === 'Dokumen Tidak Lengkap' || displayTracking === 'Menunggu Kelengkapan' || displayTracking === 'Tidak Lengkap' || displayTracking === 'SPPD & SOPD') {
         colorClass = "border-red-200 bg-red-100 text-red-600";
     }
 
@@ -133,7 +133,7 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="SPJ Makan Minum Rapat" />
-            
+
             <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 min-w-0 w-full">
                 <AppPageHeader
                     title="SPJ Makan Minum"
@@ -141,12 +141,12 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
                 />
 
                 <div className="flex flex-col gap-4">
-                    
-<div className="flex w-full items-center justify-between">
-    <p className="text-sm text-slate-500">Ketik pada kolom pencarian di tabel lalu tekan <kbd className="px-2 py-1 bg-slate-100 rounded border font-mono text-xs shadow-sm">Enter</kbd> untuk mencari.</p>
-</div>
 
-                    
+                    <div className="flex w-full items-center justify-between">
+                        <p className="text-sm text-slate-500">Ketik pada kolom pencarian di tabel lalu tekan <kbd className="px-2 py-1 bg-slate-100 rounded border font-mono text-xs shadow-sm">Enter</kbd> untuk mencari.</p>
+                    </div>
+
+
                     <div>
                         {permissions['spj.create'] && (
                             <Link href="/spj/create" className={glassBtnPrimaryClass}>
@@ -219,10 +219,10 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
                                             <select value={filters.tracking_spj} onChange={e => { handleFilterChange('tracking_spj', e.target.value); applyFilterImmediate('tracking_spj', e.target.value); }} className="w-full rounded border border-slate-200 px-1 py-1 text-[11px] outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal">
                                                 <option value="">Semua</option>
                                                 <option value="Tidak Lengkap">Tidak Lengkap</option>
-                                                <option value="SSPD & SPOD">SSPD & SPOD</option>
+                                                <option value="SPPD & SOPD">SPPD & SOPD</option>
                                                 <option value="Bendahara Pengeluaran (Biling Pajak PPH23)">Bendahara Pengeluaran (Biling Pajak PPH23)</option>
                                                 <option value="Approval Pejabat Penatausahaan Keuangan">Approval Pejabat Penatausahaan Keuangan</option>
-                                                <option value="Approval PPATK">Approval PPATK</option>
+                                                <option value="Approval PPTK">Approval PPTK</option>
                                                 <option value="Approval KPA I">Approval KPA I</option>
                                                 <option value="Bendahara Pengeluaran (CMS)">Bendahara Pengeluaran (CMS)</option>
                                                 <option value="Approval KPA II">Approval KPA II</option>
@@ -311,10 +311,10 @@ export default function SpjIndex({ data, filters: propFilters }: Props) {
                                         key={i}
                                         href={link.url ?? '#'}
                                         className={`rounded px-3 py-1 text-xs ${link.active
-                                                ? 'rounded-lg bg-slate-900 text-white shadow-sm'
-                                                : link.url
-                                                    ? 'rounded-lg text-sky-700 hover:bg-sky-100'
-                                                    : 'pointer-events-none text-slate-300'
+                                            ? 'rounded-lg bg-slate-900 text-white shadow-sm'
+                                            : link.url
+                                                ? 'rounded-lg text-sky-700 hover:bg-sky-100'
+                                                : 'pointer-events-none text-slate-300'
                                             }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />

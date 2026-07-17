@@ -80,7 +80,7 @@ const newThead = `<thead className="sticky top-0 z-10 bg-white/95 shadow-sm back
                                             <select value={filters.tracking_spj} onChange={e => { handleFilterChange('tracking_spj', e.target.value); setTimeout(applyFilters, 100); }} className="w-full rounded border border-slate-200 px-1 py-1 text-[11px] outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 font-normal">
                                                 <option value="">Semua</option>
                                                 <option value="Selesai">Selesai</option>
-                                                <option value="SSPD & SPOD">SSPD & SPOD</option>
+                                                <option value="SPPD & SOPD">SPPD & SOPD</option>
                                                 <option value="Tidak Lengkap">Tidak Lengkap</option>
                                             </select>
                                         </th>
@@ -100,12 +100,12 @@ const oldFilterCode = `                                    {data.data
                                             const matchStatus = !statusFilter || 
                                                 (statusFilter === 'Tidak Lengkap' ? 
                                                     ['Dokumen Tidak Lengkap', 'Menunggu Kelengkapan', 'Tidak Lengkap', 'Belum Lengkap'].includes(item.tracking_spj || '') : 
-                                                    (statusFilter === 'SSPD & SPOD' ? ['SSPD & SPOD', 'SPPD & SOPD'].includes(item.tracking_spj || '') : item.tracking_spj === statusFilter));
+                                                    (statusFilter === 'SPPD & SOPD' ? ['SPPD & SOPD', 'SPPD & SOPD'].includes(item.tracking_spj || '') : item.tracking_spj === statusFilter));
                                             
                                             return matchSearch && matchStatus;
                                         })
                                         .map((item, index) => {`;
-                                        
+
 const newFilterCode = `                                    {data.data.map((item, index) => {`;
 
 file = file.replace(oldFilterCode, newFilterCode);

@@ -39,7 +39,7 @@ const trackingOptions = [
     'SPPD & SOPD',
     'Bendahara Pengeluaran (Biling Pajak PPH23)',
     'Approval Pejabat Penatausahaan Keuangan',
-    'Approval PPATK',
+    'Approval PPTK',
     'Approval KPA I',
     'Bendahara Pengeluaran (CMS)',
     'Approval KPA II',
@@ -89,7 +89,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        
+
         // Cek validasi secara manual sebelum submit (sama seperti logic di button disabled)
         const hasInvalid = data.items.some(formItem => {
             const qty = parseFloat(formItem.jumlah_order);
@@ -102,7 +102,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
         if (hasInvalid || data.items.length === 0) {
             return;
         }
-        
+
         post('/spj');
     }
 
@@ -114,7 +114,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                     {/* Tanggal */}
-                                        <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
+                    <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
                         <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Tanggal</h2>
                         <div className="grid gap-4 sm:grid-cols-3">
                             <InputField label="Tanggal Pemesanan" error={errors.tanggal_pemesanan}>
@@ -130,7 +130,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                     </div>
 
                     {/* Info Kegiatan */}
-                                        <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
+                    <div className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm dark:bg-sidebar dark:border-violet-800">
                         <h2 className="mb-4 text-sm font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">Info Kegiatan</h2>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <InputField label="Kegiatan" error={errors.kegiatan}>
@@ -164,7 +164,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                     const selectedPicId = e.target.value;
                                     const selectedPic = pics.find(p => String(p.id) === selectedPicId);
                                     let newKasubbagKasi = data.kasubbag_kasi;
-                                    
+
                                     if (selectedPic && selectedPic.jabatan) {
                                         const jabatan = selectedPic.jabatan.toLowerCase();
                                         if (jabatan.includes('pembiayaan perumahan')) newKasubbagKasi = 'Seksi Pembiayaan Perumahan';
@@ -172,7 +172,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                         else if (jabatan.includes('tata usaha') || jabatan.includes('tu')) newKasubbagKasi = 'Sub Bagian Tata Usaha';
                                         else if (jabatan.includes('keuangan')) newKasubbagKasi = 'Sub Bagian Keuangan';
                                     }
-                                    
+
                                     setData(prev => ({
                                         ...prev,
                                         pic_id: selectedPicId,
@@ -187,9 +187,9 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                             </InputField>
                             <div className="sm:col-span-2">
                                 <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
-                                    <select 
-                                        className={`${inputClass} bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800`} 
-                                        value={data.kasubbag_kasi} 
+                                    <select
+                                        className={`${inputClass} bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800`}
+                                        value={data.kasubbag_kasi}
                                         onChange={e => setData('kasubbag_kasi', e.target.value)}
                                         disabled={true}
                                     >
@@ -207,7 +207,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                 {data.items.map((formItem, idx) => {
                                     const selectedItem = items.find((i) => String(i.id) === formItem.item_hps_id);
                                     const subtotal = selectedItem && formItem.jumlah_order ? calcTotalHarga(formItem.jumlah_order, selectedItem.harga_unit) : 0;
-                                    
+
                                     return (
                                         <div key={idx} className="mb-3 flex flex-col gap-4 rounded-xl border border-violet-100 bg-violet-50/50 p-4 dark:border-violet-800/50 dark:bg-violet-900/10 sm:flex-row sm:items-start">
                                             <div className="flex-1">
@@ -235,7 +235,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                                         }).map((item) => {
                                                             const currentlyOrdered = data.items.filter(i => i.item_hps_id === String(item.id)).reduce((acc, i) => acc + (parseFloat(i.jumlah_order) || 0), 0);
                                                             const remaining = item.available_volume - currentlyOrdered;
-                                                            
+
                                                             return (
                                                                 <option key={item.id} value={item.id}>
                                                                     {item.nama_item} (tersedia: {formatQty(remaining)})
@@ -283,7 +283,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                                     </p>
                                                 </InputField>
                                             </div>
-                                            
+
                                             {data.items.length > 1 && (
                                                 <div className="pt-6">
                                                     <button type="button" onClick={() => {
@@ -297,7 +297,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                         </div>
                                     );
                                 })}
-                                
+
                                 <div className="mt-2 flex justify-start">
                                     <button
                                         type="button"
@@ -307,7 +307,7 @@ export default function SpjCreate({ pics, penyedias, items }: Props) {
                                         <Plus className="h-4 w-4" /> Tambah Item
                                     </button>
                                 </div>
-                                
+
                                 <div className="mt-4 flex justify-end">
                                     <div className="rounded-lg bg-violet-600 px-6 py-3 text-white shadow-md">
                                         <p className="text-xs text-violet-200 uppercase tracking-wide">Total Harga</p>

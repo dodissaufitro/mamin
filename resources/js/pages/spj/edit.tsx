@@ -63,10 +63,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const trackingOptions = [
-    'SSPD & SPOD',
+    'SPPD & SOPD',
     'Bendahara Pengeluaran (Biling Pajak PPH23)',
     'Approval Pejabat Penatausahaan Keuangan',
-    'Approval PPATK',
+    'Approval PPTK',
     'Approval KPA I',
     'Bendahara Pengeluaran (CMS)',
     'Approval KPA II',
@@ -169,7 +169,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        
+
         let hasInvalidItems = false;
         data.items.forEach(formItem => {
             const qty = parseFloat(formItem.jumlah_order);
@@ -189,7 +189,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
         formData.append('kegiatan', data.kegiatan);
         formData.append('jenis_mamin', data.jenis_mamin);
         formData.append('penyedia_id', data.penyedia_id);
-        
+
         data.items.forEach((item, idx) => {
             formData.append(`items[${idx}][item_hps_id]`, item.item_hps_id);
             formData.append(`items[${idx}][jumlah_order]`, item.jumlah_order);
@@ -271,7 +271,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                     const selectedPicId = e.target.value;
                                     const selectedPic = pics.find(p => String(p.id) === selectedPicId);
                                     let newKasubbagKasi = data.kasubbag_kasi;
-                                    
+
                                     if (selectedPic && selectedPic.jabatan) {
                                         const jabatan = selectedPic.jabatan.toLowerCase();
                                         if (jabatan.includes('pembiayaan perumahan')) newKasubbagKasi = 'Seksi Pembiayaan Perumahan';
@@ -279,7 +279,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                         else if (jabatan.includes('tata usaha') || jabatan.includes('tu')) newKasubbagKasi = 'Sub Bagian Tata Usaha';
                                         else if (jabatan.includes('keuangan')) newKasubbagKasi = 'Sub Bagian Keuangan';
                                     }
-                                    
+
                                     setData(prev => ({
                                         ...prev,
                                         pic_id: selectedPicId,
@@ -295,9 +295,9 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
 
                             <div className="sm:col-span-2">
                                 <InputField label="Kasubbag / Kasi" error={errors.kasubbag_kasi}>
-                                    <select 
-                                        className={`${inputClass} bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800`} 
-                                        value={data.kasubbag_kasi} 
+                                    <select
+                                        className={`${inputClass} bg-gray-100 cursor-not-allowed opacity-70 dark:bg-gray-800`}
+                                        value={data.kasubbag_kasi}
                                         onChange={(e) => setData('kasubbag_kasi', e.target.value)}
                                         disabled={true}
                                     >
@@ -309,13 +309,13 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                     </select>
                                 </InputField>
                             </div>
-                            
+
                             <div className="sm:col-span-2 mt-2">
                                 <label className="mb-2 block text-sm font-semibold text-violet-700 dark:text-violet-300">Daftar Item HPS</label>
                                 {data.items.map((formItem, idx) => {
                                     const selectedItem = items.find((i) => String(i.id) === formItem.item_hps_id);
                                     const subtotal = selectedItem && formItem.jumlah_order ? calcTotalHarga(formItem.jumlah_order, selectedItem.harga_unit) : 0;
-                                    
+
                                     return (
                                         <div key={idx} className="mb-3 flex flex-col gap-4 rounded-xl border border-violet-100 bg-violet-50/50 p-4 dark:border-violet-800/50 dark:bg-violet-900/10 sm:flex-row sm:items-start">
                                             <div className="flex-1">
@@ -346,7 +346,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                                         }).map((item) => {
                                                             const currentlyOrdered = data.items.filter(i => i.item_hps_id === String(item.id)).reduce((acc, i) => acc + (parseFloat(i.jumlah_order) || 0), 0);
                                                             const remaining = item.available_volume - currentlyOrdered;
-                                                            
+
                                                             return (
                                                                 <option key={item.id} value={item.id}>
                                                                     {item.nama_item} (tersedia: {formatQty(remaining)})
@@ -394,7 +394,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                                     </p>
                                                 </InputField>
                                             </div>
-                                            
+
                                             {data.items.length > 1 && !isBendahara && (
                                                 <div className="pt-6">
                                                     <button type="button" onClick={() => {
@@ -408,7 +408,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                         </div>
                                     );
                                 })}
-                                
+
                                 {!isBendahara && (
                                     <div className="mt-2 flex justify-start">
                                         <button
@@ -420,7 +420,7 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                         </button>
                                     </div>
                                 )}
-                                
+
                                 <div className="mt-4 flex justify-end">
                                     <div className="rounded-lg bg-violet-600 px-6 py-3 text-white shadow-md">
                                         <p className="text-xs text-violet-200 uppercase tracking-wide">Total Harga</p>
@@ -467,18 +467,18 @@ export default function SpjEdit({ spj, pics, penyedias, items, dokumenProgress }
                                 </p>
                             ) : (
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                {trackingOptions.map((opt) => (
-                                    <label key={opt} className="flex cursor-pointer items-start gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
-                                        <input
-                                            type="radio"
-                                            name="tracking_spj"
-                                            className="mt-0.5 h-4 w-4 accent-violet-600"
-                                            checked={data.tracking_spj === opt}
-                                            onChange={() => setData('tracking_spj', opt)}
-                                        />
-                                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-tight">{opt}</span>
-                                    </label>
-                                ))}
+                                    {trackingOptions.map((opt) => (
+                                        <label key={opt} className="flex cursor-pointer items-start gap-2 rounded-lg border border-violet-200 px-3 py-2 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/20">
+                                            <input
+                                                type="radio"
+                                                name="tracking_spj"
+                                                className="mt-0.5 h-4 w-4 accent-violet-600"
+                                                checked={data.tracking_spj === opt}
+                                                onChange={() => setData('tracking_spj', opt)}
+                                            />
+                                            <span className="text-sm text-gray-700 dark:text-gray-300 leading-tight">{opt}</span>
+                                        </label>
+                                    ))}
                                 </div>
                             )}
                         </div>

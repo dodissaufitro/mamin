@@ -128,7 +128,7 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                             <InfoRow label="Penyedia" value={spj.penyedia?.nama ?? null} />
                             <InfoRow label="PIC Penanggung Jawab" value={spj.pic ? `${spj.pic.nama}${spj.pic.jabatan ? ` (${spj.pic.jabatan})` : ''}` : null} />
                             <InfoRow label="Kasubbag / Kasi" value={spj.kasubbag_kasi} />
-                            
+
                             <div className="sm:col-span-2 mt-2">
                                 <label className="mb-2 block text-sm font-semibold text-violet-700 dark:text-violet-300">Daftar Item HPS</label>
                                 {spj.spj_items?.map((spjItem, idx) => (
@@ -148,7 +148,7 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                                         </div>
                                     </div>
                                 ))}
-                                
+
                                 <div className="mt-4 flex justify-end">
                                     <div className="rounded-lg bg-violet-600 px-6 py-3 text-white shadow-md">
                                         <p className="text-xs text-violet-200 uppercase tracking-wide">Total Harga</p>
@@ -221,7 +221,7 @@ export default function SpjShow({ spj, dokumenProgress }: Props) {
                             <div>
                                 <InfoRow label="Tracking Saat Ini" value={
                                     <span className="inline-flex mt-1 items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-900/50">
-                                        {(spj.tracking_spj === 'SPPD & SOPD' ? 'SSPD & SPOD' : spj.tracking_spj) || 'Belum ada tracking spesifik'}
+                                        {(spj.tracking_spj === 'SPPD & SOPD' ? 'SPPD & SOPD' : spj.tracking_spj) || 'Belum ada tracking spesifik'}
                                     </span>
                                 } />
                             </div>

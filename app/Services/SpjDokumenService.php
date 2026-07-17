@@ -165,7 +165,7 @@ class SpjDokumenService
         if ($complete) {
             $currentTracking = $spj->tracking_spj;
             if (empty($currentTracking) || in_array($currentTracking, ['Lengkap', 'Dokumen Tidak Lengkap', 'Menunggu Kelengkapan', 'Tidak Lengkap', 'Belum Lengkap'], true)) {
-                $updateData['tracking_spj'] = 'SSPD & SPOD';
+                $updateData['tracking_spj'] = 'SPPD & SOPD';
             }
         } else {
             $updateData['tracking_spj'] = 'Belum Lengkap';
